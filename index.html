@@ -5,19 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LLM Benchmark Tester</title>
 
-    <!-- CSS Modules -->
+    <!-- CSS -->
     <link rel="stylesheet" href="src/css/styles.css">
-    <link rel="stylesheet" href="src/css/base.css">
-    <link rel="stylesheet" href="src/css/layout.css">
-    <link rel="stylesheet" href="src/css/buttons.css">
-    <link rel="stylesheet" href="src/css/models.css">
-    <link rel="stylesheet" href="src/css/tests.css">
-    <link rel="stylesheet" href="src/css/options.css">
-    <link rel="stylesheet" href="src/css/runner.css">
-    <link rel="stylesheet" href="src/css/logs.css">
-    <link rel="stylesheet" href="src/css/metrics.css">
-    <link rel="stylesheet" href="src/css/modal.css">
-    <link rel="stylesheet" href="src/css/responsive.css">
 </head>
 <body>
     <div id="app">
@@ -39,165 +28,216 @@
         <!-- Test View -->
         <div id="test-view" class="view active">
             <div class="main-content">
-                <!-- Provider Status -->
-                <div class="provider-status">
-                    <div id="ollama-status" class="provider-card">
-                        <div class="provider-header">
-                            <span class="provider-icon">🦙</span>
-                            <span class="provider-name">Ollama</span>
-                        </div>
-                        <div class="provider-state">Lädt...</div>
-                    </div>
-                    <div id="openrouter-status" class="provider-card">
-                        <div class="provider-header">
-                            <span class="provider-icon">🌐</span>
-                            <span class="provider-name">OpenRouter</span>
-                        </div>
-                        <div class="provider-state">Lädt...</div>
-                    </div>
-                </div>
-
-                <!-- Model Selection -->
-                <div class="model-selection">
-                    <!-- Ollama Models -->
-                    <div id="ollama-models" class="model-section">
-                        <h4>🦙 Ollama Modelle</h4>
-                        <div id="ollama-model-list" class="model-list"></div>
-                    </div>
-
-                    <!-- OpenRouter Models -->
-                    <div id="openrouter-models" class="model-section">
-                        <h4>🌐 OpenRouter</h4>
-                        <input
-                            type="text"
-                            id="model-search"
-                            class="model-search"
-                            placeholder="Suche Modell..."
-                        />
-                        <select id="openrouter-model-select" class="model-select" size="1"></select>
-
-                        <div id="selected-model-info" class="model-info" style="display: none;">
-                            <div class="model-name"></div>
-                            <div class="model-context"></div>
-                            <div class="model-price"></div>
+                <div class="test-layout">
+                    <!-- Left Column: Model Selection -->
+                    <div class="left-column">
+                        <!-- Ollama Models -->
+                        <div id="ollama-models" class="model-section">
+                            <div class="section-header-compact">
+                                <span class="provider-icon-small">🦙</span>
+                                <h3>Ollama</h3>
+                                <span id="ollama-status" class="status-badge-small">Lädt...</span>
+                            </div>
+                            <div id="ollama-model-list" class="model-list"></div>
                         </div>
 
-                        <div class="default-model-controls">
-                            <label>
-                                <input type="checkbox" id="openrouter-default-toggle" />
-                                <span>Als Standard setzen</span>
-                            </label>
-                            <button id="openrouter-default-btn" class="btn btn-secondary" style="display: none;">
-                                Standard ändern
-                            </button>
-                            <div id="openrouter-default-status" class="default-status"></div>
-                        </div>
-                    </div>
-                </div>
+                        <!-- OpenRouter Models -->
+                        <div id="openrouter-models" class="model-section">
+                            <div class="section-header-compact">
+                                <span class="provider-icon-small">🌐</span>
+                                <h3>OpenRouter</h3>
+                                <span id="openrouter-status" class="status-badge-small">Lädt...</span>
+                            </div>
+                            <div class="model-count">
+                                <span id="openrouter-count">347</span> Modelle verfügbar
+                            </div>
+                            <input
+                                type="text"
+                                id="model-search"
+                                class="model-search"
+                                placeholder="Modell suchen..."
+                            />
+                            <select id="openrouter-model-select" class="model-dropdown"></select>
 
-                <!-- Test Filters -->
-                <div class="test-filters">
-                    <select id="filter-category">
-                        <option value="">Alle Kategorien</option>
-                    </select>
-                    <select id="filter-difficulty">
-                        <option value="">Alle Schwierigkeiten</option>
-                    </select>
-                </div>
+                            <div id="selected-model-info" class="model-info" style="display: none;">
+                                <div class="model-name"></div>
+                                <div class="model-context"></div>
+                                <div class="model-price"></div>
+                            </div>
 
-                <!-- Test List -->
-                <div class="test-list-container">
-                    <h3>Tests</h3>
-                    <div id="test-list" class="test-list"></div>
-                </div>
-
-                <!-- Run Options -->
-                <div class="run-options">
-                    <h3>Test-Optionen</h3>
-
-                    <div class="options-grid">
-                        <div class="option-group">
-                            <label for="run-mode">Modus</label>
-                            <select id="run-mode">
-                                <option value="single">Single Run</option>
-                                <option value="batch">Batch (mehrfach)</option>
-                                <option value="retry">Retry (mit Feedback)</option>
-                            </select>
-                        </div>
-
-                        <div class="option-group">
-                            <label for="temperature">Temperature</label>
-                            <input type="number" id="temperature" min="0" max="2" step="0.1" value="0.1" />
-                        </div>
-
-                        <div class="option-group" id="iterations-label" style="display: none;">
-                            <label for="iterations">Iterationen</label>
-                            <input type="number" id="iterations" min="1" max="20" value="5" />
-                        </div>
-
-                        <div class="option-group" id="max-attempts-label" style="display: none;">
-                            <label for="max-attempts">Max. Versuche</label>
-                            <input type="number" id="max-attempts" min="1" max="10" value="3" />
+                            <div class="default-model-controls">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="openrouter-default-toggle" />
+                                    <span>Als Standard setzen</span>
+                                </label>
+                                <button id="openrouter-default-btn" class="btn btn-secondary" style="display: none;">
+                                    Standard ändern
+                                </button>
+                                <div id="openrouter-default-status" class="default-status"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="action-bar">
-                        <button id="start-test-btn" class="btn btn-primary" disabled>
-                            🚀 Test starten
-                        </button>
-                        <button id="compare-btn" class="btn btn-secondary" disabled>
-                            📊 Vergleichen
-                        </button>
-                    </div>
+                    <!-- Right Column: Test Execution -->
+                    <div class="right-column">
+                        <div class="execution-panel">
+                            <h3>Test-Ausfuehrung</h3>
 
-                    <div class="action-bar-top">
-                        <button id="start-test-btn-top" class="btn btn-secondary btn-small" disabled>
-                            Schnellstart
-                        </button>
-                        <button id="compare-btn-top" class="btn btn-secondary btn-small" disabled>
-                            Vergleichen
-                        </button>
-                        <button id="limit-test-btn" class="btn btn-secondary btn-small" disabled>
-                            Limit Test
-                        </button>
-                        <button id="warmup-local-btn" class="btn btn-secondary btn-small">
-                            🔥 Warmup (Local)
-                        </button>
-                        <button id="batch-all-btn" class="btn btn-secondary btn-small">
-                            📦 Batch All
-                        </button>
-                    </div>
+                            <div class="panel-section">
+                                <label class="panel-label" for="filter-category">Test Kategorie auswaehlen</label>
+                                <select id="filter-category" class="panel-select">
+                                    <option value="">Alle Kategorien</option>
+                                </select>
+                            </div>
 
-                    <!-- Batch All Options -->
-                    <div class="batch-all-options">
-                        <h4>Batch All Optionen</h4>
+                            <div class="mode-tabs" role="tablist">
+                                <button class="mode-tab active" data-mode="single">Single Try</button>
+                                <button class="mode-tab" data-mode="batch">Batch Testing</button>
+                                <button class="mode-tab" data-mode="limit">Limit Testing</button>
+                            </div>
 
-                        <div class="option-group">
-                            <label for="batch-iterations">Iterationen pro Test</label>
-                            <input type="number" id="batch-iterations" min="1" max="20" value="3" />
+                            <div id="mode-single" class="mode-content active">
+                                <div class="mode-option">
+                                    <label class="option-label">
+                                        <span>Temperatur:</span>
+                                        <input type="number" id="single-temperature" min="0" max="2" step="0.1" value="0" readonly />
+                                    </label>
+                                </div>
+
+                                <div id="single-selected-tests" class="selected-tests-list">
+                                    <div class="selected-tests-header">Markierte Tests:</div>
+                                    <p class="info-text-empty">Keine Tests ausgewaehlt</p>
+                                </div>
+
+                                <div id="single-warmup-note" class="warmup-note" style="display: none;">
+                                    Lokales Modell gewaehlt: Bitte zuerst Warm-up ausfuehren.
+                                </div>
+
+                                <div class="mode-actions">
+                                    <button id="single-warmup-btn" class="btn btn-secondary">Warm-up lokale Modelle</button>
+                                    <button id="single-run-btn" class="btn btn-primary" disabled>
+                                        <span id="single-count">0</span> Tests ausfuehren
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="mode-batch" class="mode-content">
+                                <div class="mode-option">
+                                    <label class="option-label">
+                                        <span>Iterationen:</span>
+                                        <input type="number" id="batch-iterations" min="1" max="50" value="10" />
+                                    </label>
+                                </div>
+
+                                <div class="mode-option">
+                                    <label class="option-label">
+                                        <span>Temperatur:</span>
+                                        <input type="number" id="batch-temperature" min="0" max="2" step="0.1" value="0" readonly />
+                                    </label>
+                                </div>
+
+                                <div class="selection-mode">
+                                    <label class="radio-label">
+                                        <input type="radio" name="batch-selection" value="all" checked />
+                                        <span>Alle Tests nach Kategorie</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="batch-selection" value="selected" />
+                                        <span>Nur ausgewaehlte Tests</span>
+                                    </label>
+                                </div>
+
+                                <div id="batch-category-options" class="category-options">
+                                    <span class="label-small">Kategorien:</span>
+                                    <label class="checkbox-label-inline">
+                                        <input type="checkbox" class="batch-category" value="standard" checked />
+                                        <span>Standard</span>
+                                    </label>
+                                    <label class="checkbox-label-inline">
+                                        <input type="checkbox" class="batch-category" value="long-input" checked />
+                                        <span>Long Input</span>
+                                    </label>
+                                </div>
+
+                                <div id="batch-selected-tests" class="selected-tests-list" style="display: none;">
+                                    <div class="selected-tests-header">Markierte Tests:</div>
+                                    <p class="info-text-empty">Keine Tests ausgewaehlt</p>
+                                </div>
+
+                                <div id="batch-warmup-note" class="warmup-note" style="display: none;">
+                                    Lokales Modell gewaehlt: Bitte zuerst Warm-up ausfuehren.
+                                </div>
+
+                                <div class="mode-actions">
+                                    <button id="batch-warmup-btn" class="btn btn-secondary">Warm-up lokale Modelle</button>
+                                    <button id="batch-run-btn" class="btn btn-primary">Batch starten</button>
+                                </div>
+                            </div>
+
+                            <div id="mode-limit" class="mode-content">
+                                <div class="mode-option">
+                                    <label class="option-label">
+                                        <span>Retry Versuche:</span>
+                                        <input type="number" id="limit-max-attempts" min="1" max="20" value="5" />
+                                    </label>
+                                </div>
+
+                                <div class="mode-option">
+                                    <label class="option-label">
+                                        <span>Temperatur:</span>
+                                        <input type="number" id="limit-temperature" min="0" max="2" step="0.1" value="0" readonly />
+                                    </label>
+                                </div>
+
+                                <div class="limit-test-info">
+                                    <div class="info-box">
+                                        <span class="info-icon">i</span>
+                                        <span>Limit Test wird automatisch ausgewaehlt: <strong id="limit-test-name">-</strong></span>
+                                    </div>
+                                </div>
+
+                                <div id="limit-warmup-note" class="warmup-note" style="display: none;">
+                                    Lokales Modell gewaehlt: Bitte zuerst Warm-up ausfuehren.
+                                </div>
+
+                                <div class="mode-actions">
+                                    <button id="limit-warmup-btn" class="btn btn-secondary">Warm-up lokale Modelle</button>
+                                    <button id="limit-run-btn" class="btn btn-primary">Test ausfuehren</button>
+                                </div>
+                            </div>
+
+                            <div class="mode-info-text">
+                                Warm-up Runs werden markiert und nicht in Stats/Export gezaehlt.
+                            </div>
                         </div>
 
-                        <div class="option-group">
-                            <label>
-                                <input type="checkbox" id="batch-auto-only" checked />
-                                Nur Auto-Tests
-                            </label>
-                        </div>
-
-                        <div class="batch-categories">
-                            <label><input type="checkbox" class="batch-category" value="code" checked /> Code</label>
-                            <label><input type="checkbox" class="batch-category" value="math" checked /> Math</label>
-                            <label><input type="checkbox" class="batch-category" value="reasoning" checked /> Reasoning</label>
-                            <label><input type="checkbox" class="batch-category" value="content" checked /> Content</label>
-                            <label><input type="checkbox" class="batch-category" value="structured" checked /> Structured</label>
+                        <div class="test-list-container">
+                            <div class="test-list-header">
+                                <h3>Tests</h3>
+                                <select id="filter-difficulty" style="display: none;">
+                                    <option value="">Alle Schwierigkeiten</option>
+                                </select>
+                            </div>
+                            <div id="test-list" class="test-list"></div>
                         </div>
                     </div>
-                </div>
+
+                    <!-- Hidden elements for compatibility -->
+                    <div style="display: none;">
+                        <select id="run-mode">
+                            <option value="single" selected>Single</option>
+                            <option value="batch">Batch</option>
+                            <option value="retry">Retry</option>
+                        </select>
+                        <input type="number" id="temperature" value="0" />
+                        <input type="number" id="iterations" value="10" />
+                        <input type="number" id="max-attempts" value="5" />
+                    </div>
             </div>
         </div>
 
         <!-- Runner View -->
-        <div id="runner-view" class="view runner-view" style="display: none;">
+        <div id="runner-view" class="view runner-view">
             <div class="main-content">
                 <!-- Runner Header -->
                 <div class="runner-header">
@@ -216,6 +256,12 @@
                     </button>
                 </div>
 
+                <!-- Progress Bar -->
+                <div id="runner-progress" class="progress-bar" style="display: none;">
+                    <div id="progress-fill" class="progress-fill"></div>
+                    <span id="progress-text" class="progress-text">0%</span>
+                </div>
+
                 <!-- Runner Content -->
                 <div class="runner-content">
                     <!-- Prompt Section -->
@@ -231,12 +277,6 @@
                             <button id="toggle-output-btn" class="btn-icon" title="Minimieren">▼</button>
                         </h3>
                         <pre id="runner-output" class="code-block">Warte auf Antwort...</pre>
-                    </div>
-
-                    <!-- Progress Bar -->
-                    <div id="runner-progress" class="progress-bar" style="display: none;">
-                        <div id="progress-fill" class="progress-fill"></div>
-                        <span id="progress-text" class="progress-text">0%</span>
                     </div>
 
                     <!-- Runner Metrics -->
@@ -392,14 +432,37 @@
 
                 <div class="metrics-tables">
                     <section>
+                        <h3>Performance nach Provider</h3>
+                        <table id="stats-by-provider" class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Provider</th>
+                                    <th>Runs</th>
+                                    <th>Bestanden</th>
+                                    <th>Fehlgeschlagen</th>
+                                    <th>Erfolgsrate</th>
+                                    <th>Ø Latenz</th>
+                                    <th>Median</th>
+                                    <th>StdDev</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </section>
+
+                    <section>
                         <h3>Performance nach Modell</h3>
                         <table id="stats-by-model" class="comparison-table">
                             <thead>
                                 <tr>
                                     <th>Modell</th>
-                                    <th>Tests</th>
+                                    <th>Runs</th>
+                                    <th>Bestanden</th>
+                                    <th>Fehlgeschlagen</th>
                                     <th>Erfolgsrate</th>
                                     <th>Ø Latenz</th>
+                                    <th>Median</th>
+                                    <th>StdDev</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -412,9 +475,10 @@
                             <thead>
                                 <tr>
                                     <th>Test</th>
-                                    <th>Durchläufe</th>
+                                    <th>Runs</th>
+                                    <th>Bestanden</th>
+                                    <th>Fehlgeschlagen</th>
                                     <th>Erfolgsrate</th>
-                                    <th>Ø Latenz</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>

@@ -27,6 +27,26 @@
         flex-direction: column;
     }
 
+    .test-runner-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .test-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .batch-buttons {
+        flex-direction: column;
+    }
+
+    .runner-options {
+        grid-template-columns: 1fr;
+    }
+
+    .runner-action-buttons {
+        flex-direction: column;
+    }
+
     .model-list {
         grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     }

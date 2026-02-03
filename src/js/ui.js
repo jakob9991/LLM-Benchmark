@@ -17,7 +17,8 @@ const UI = {
         runnerAbortController: null,
         runnerCancelRequested: false,
         runnerInFlight: false,
-        isLimitTestMode: false
+        isLimitTestMode: false,
+        warmupModelId: null
     },
 
     /**
@@ -26,6 +27,8 @@ const UI = {
     async init() {
         this.bindNavigation();
         this.bindRunOptions();
+        this.bindModeTabs();
+        this.bindBatchSelection();
         this.bindActions();
         this.bindModal();
         this.bindFilters();
@@ -48,6 +51,42 @@ const UI = {
                 this.switchView(view);
             });
         });
+    },
+
+    bindModeTabs() {
+        const tabs = document.querySelectorAll('.mode-tab');
+        if (!tabs.length) return;
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const mode = tab.dataset.mode;
+                tabs.forEach(t => t.classList.toggle('active', t === tab));
+                document.querySelectorAll('.mode-content').forEach(section => {
+                    section.classList.toggle('active', section.id === `mode-${mode}`);
+                });
+                const runMode = document.getElementById('run-mode');
+                if (runMode) {
+                    runMode.value = mode === 'limit' ? 'retry' : mode;
+                }
+                const temperature = document.getElementById('temperature');
+                if (temperature) temperature.value = 0;
+                this.updateActionButtons();
+            });
+        });
+    },
+
+    bindBatchSelection() {
+        const radios = document.querySelectorAll('input[name="batch-selection"]');
+        if (!radios.length) return;
+        const update = () => {
+            const selectedMode = document.querySelector('input[name="batch-selection"]:checked')?.value || 'all';
+            const categoryOptions = document.getElementById('batch-category-options');
+            const selectedTests = document.getElementById('batch-selected-tests');
+            if (categoryOptions) categoryOptions.style.display = selectedMode === 'all' ? 'flex' : 'none';
+            if (selectedTests) selectedTests.style.display = selectedMode === 'selected' ? 'block' : 'none';
+            this.updateActionButtons();
+        };
+        radios.forEach(radio => radio.addEventListener('change', update));
+        update();
     },
 
     switchView(viewName) {
@@ -82,24 +121,26 @@ const UI = {
 
     renderProviderStatus(providers) {
         // Ollama
-        const ollamaEl = document.querySelector('#ollama-status .provider-state');
-        if (providers.ollama?.available) {
-            ollamaEl.textContent = `${providers.ollama.models.length} Modelle`;
-            ollamaEl.className = 'provider-state available';
-        } else {
-            ollamaEl.textContent = 'Nicht verfügbar';
-            ollamaEl.className = 'provider-state unavailable';
+        const ollamaEl = document.querySelector('#ollama-status');
+        if (ollamaEl) {
+            if (providers.ollama?.available) {
+                ollamaEl.textContent = `${providers.ollama.models.length} Modelle`;
+                ollamaEl.className = 'status-badge-small available';
+            } else {
+                ollamaEl.textContent = 'Nicht verfügbar';
+                ollamaEl.className = 'status-badge-small';
+            }
         }
 
         // OpenRouter
-        const openrouterEl = document.querySelector('#openrouter-status .provider-state');
+        const openrouterEl = document.querySelector('#openrouter-status');
         if (openrouterEl) {
             if (providers.openrouter?.available) {
                 openrouterEl.textContent = `${providers.openrouter.models.length} Modelle`;
-                openrouterEl.className = 'provider-state available';
+                openrouterEl.className = 'status-badge-small available';
             } else {
                 openrouterEl.textContent = 'Nicht konfiguriert';
-                openrouterEl.className = 'provider-state unavailable';
+                openrouterEl.className = 'status-badge-small';
             }
         }
     },
@@ -256,6 +297,11 @@ const UI = {
         }
 
         this.state.selectedModel = { provider, model: modelId };
+        if (provider !== 'ollama') {
+            this.state.warmupModelId = null;
+        } else if (this.state.warmupModelId !== modelId) {
+            this.state.warmupModelId = null;
+        }
         this.updateActionButtons();
     },
 
@@ -292,6 +338,11 @@ const UI = {
             this.state.tests = data.tests;
             this.renderTests(data.tests);
             this.populateFilters(data.categories, data.difficulties);
+            const limitNameEl = document.getElementById('limit-test-name');
+            if (limitNameEl) {
+                const limitTest = data.tests.find(t => t.category === 'limit-testing');
+                limitNameEl.textContent = limitTest ? limitTest.name : '-';
+            }
             this.updateActionButtons();
         } catch (error) {
             console.error('Error loading tests:', error);
@@ -312,20 +363,30 @@ const UI = {
 
             return `
                 <div class="test-item" data-test-id="${test.id}">
-                    <div class="test-item-header">
-                        <span class="test-category-icon">${categoryInfo.icon}</span>
-                        <span class="test-item-name">${this.escapeHtml(test.name)}</span>
-                        <span class="test-difficulty" style="background: ${difficultyInfo.color}">${difficultyInfo.name}</span>
-                        <button class="test-info-btn" data-test-id="${test.id}" title="Test-Details anzeigen">ℹ️</button>
-                    </div>
-                    <div class="test-item-description">${this.escapeHtml(test.description)}</div>
-                    <div class="test-item-meta">
-                        <span class="test-category">${categoryInfo.name}</span>
-                        <span class="test-eval-type">${test.evaluationType === 'auto' ? '🤖 Auto' : '👤 Manuell'}</span>
+                    <input type="checkbox" class="test-item-checkbox" data-test-id="${test.id}" />
+                    <div class="test-item-info">
+                        <div class="test-item-header">
+                            <span class="test-category-icon">${categoryInfo.icon}</span>
+                            <span class="test-item-name">${this.escapeHtml(test.name)}</span>
+                            <span class="test-difficulty" style="background: ${difficultyInfo.color}">${difficultyInfo.name}</span>
+                            <button class="test-info-btn" data-test-id="${test.id}" title="Test-Details anzeigen">ℹ️</button>
+                        </div>
+                        <div class="test-item-description">${this.escapeHtml(test.description)}</div>
+                        <div class="test-item-meta">
+                            <span class="test-category">${categoryInfo.name}</span>
+                            <span class="test-eval-type">${test.evaluationType === 'auto' ? '🤖 Auto' : '👤 Manuell'}</span>
+                        </div>
                     </div>
                 </div>
             `;
         }).join('');
+
+        // Bind checkbox events
+        container.querySelectorAll('.test-item-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                this.updateSelectedTestsCount();
+            });
+        });
 
         // Bind click events
         container.querySelectorAll('.test-item').forEach(item => {
@@ -333,17 +394,15 @@ const UI = {
                 // Ignoriere Klicks auf den Info-Button
                 if (e.target.classList.contains('test-info-btn')) return;
 
-                container.querySelectorAll('.test-item').forEach(i => i.classList.remove('selected'));
-                item.classList.add('selected');
-                this.state.selectedTest = this.state.tests.find(t => t.id === item.dataset.testId);
-                this.updateActionButtons();
-            });
+                // Wenn Checkbox geklickt, lass das native Verhalten laufen
+                if (e.target.classList.contains('test-item-checkbox')) return;
 
-            // Doppelklick öffnet Details
-            item.addEventListener('dblclick', (e) => {
-                if (e.target.classList.contains('test-info-btn')) return;
-                const test = this.state.tests.find(t => t.id === item.dataset.testId);
-                this.showTestDetails(test);
+                // Ansonsten: Toggle Checkbox
+                const checkbox = item.querySelector('.test-item-checkbox');
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    this.updateSelectedTestsCount();
+                }
             });
         });
 
@@ -355,25 +414,31 @@ const UI = {
                 this.showTestDetails(test);
             });
         });
+
+        this.updateSelectedTestsCount();
     },
 
     populateFilters(categories, difficulties) {
         const catSelect = document.getElementById('filter-category');
-        categories?.forEach(cat => {
-            const info = CONFIG.categories[cat] || { name: cat };
-            catSelect.innerHTML += `<option value="${cat}">${info.name}</option>`;
-        });
+        if (catSelect) {
+            categories?.forEach(cat => {
+                const info = CONFIG.categories[cat] || { name: cat };
+                catSelect.innerHTML += `<option value="${cat}">${info.name}</option>`;
+            });
+        }
 
         const diffSelect = document.getElementById('filter-difficulty');
-        difficulties?.forEach(diff => {
-            const info = CONFIG.difficulties[diff] || { name: diff };
-            diffSelect.innerHTML += `<option value="${diff}">${info.name}</option>`;
-        });
+        if (diffSelect) {
+            difficulties?.forEach(diff => {
+                const info = CONFIG.difficulties[diff] || { name: diff };
+                diffSelect.innerHTML += `<option value="${diff}">${info.name}</option>`;
+            });
+        }
     },
 
     bindFilters() {
-        document.getElementById('filter-category').addEventListener('change', () => this.applyFilters());
-        document.getElementById('filter-difficulty').addEventListener('change', () => this.applyFilters());
+        document.getElementById('filter-category')?.addEventListener('change', () => this.applyFilters());
+        document.getElementById('filter-difficulty')?.addEventListener('change', () => this.applyFilters());
     },
 
     bindDefaultModelControls() {
@@ -394,8 +459,8 @@ const UI = {
     },
 
     applyFilters() {
-        const category = document.getElementById('filter-category').value;
-        const difficulty = document.getElementById('filter-difficulty').value;
+        const category = document.getElementById('filter-category')?.value || '';
+        const difficulty = document.getElementById('filter-difficulty')?.value || '';
 
         let filtered = this.state.tests;
         if (category) filtered = filtered.filter(t => t.category === category);
@@ -408,6 +473,18 @@ const UI = {
         const tempInput = document.getElementById('temperature');
         if (tempInput && CONFIG.defaultParams?.temperature !== undefined) {
             tempInput.value = CONFIG.defaultParams.temperature;
+        }
+        const singleTemp = document.getElementById('single-temperature');
+        if (singleTemp && CONFIG.defaultParams?.temperature !== undefined) {
+            singleTemp.value = CONFIG.defaultParams.temperature;
+        }
+        const batchTemp = document.getElementById('batch-temperature');
+        if (batchTemp && CONFIG.defaultParams?.temperature !== undefined) {
+            batchTemp.value = CONFIG.defaultParams.temperature;
+        }
+        const limitTemp = document.getElementById('limit-temperature');
+        if (limitTemp && CONFIG.defaultParams?.temperature !== undefined) {
+            limitTemp.value = CONFIG.defaultParams.temperature;
         }
 
         const iterationsInput = document.getElementById('iterations');
@@ -486,10 +563,14 @@ const UI = {
      * Run Options
      */
     bindRunOptions() {
-        document.getElementById('run-mode').addEventListener('change', (e) => {
+        const runMode = document.getElementById('run-mode');
+        if (!runMode) return;
+        runMode.addEventListener('change', (e) => {
             const mode = e.target.value;
-            document.getElementById('iterations-label').style.display = mode === 'batch' ? 'block' : 'none';
-            document.getElementById('max-attempts-label').style.display = mode === 'retry' ? 'block' : 'none';
+            const iterationsLabel = document.getElementById('iterations-label');
+            if (iterationsLabel) iterationsLabel.style.display = mode === 'batch' ? 'block' : 'none';
+            const maxAttemptsLabel = document.getElementById('max-attempts-label');
+            if (maxAttemptsLabel) maxAttemptsLabel.style.display = mode === 'retry' ? 'block' : 'none';
         });
     },
 
@@ -497,13 +578,20 @@ const UI = {
      * Action Buttons
      */
     bindActions() {
-        document.getElementById('start-test-btn').addEventListener('click', () => this.startTest());
-        document.getElementById('compare-btn').addEventListener('click', () => this.showCompareDialog());
+        document.getElementById('start-test-btn')?.addEventListener('click', () => this.startTest());
+        document.getElementById('compare-btn')?.addEventListener('click', () => this.showCompareDialog());
         document.getElementById('start-test-btn-top')?.addEventListener('click', () => this.startTest());
         document.getElementById('compare-btn-top')?.addEventListener('click', () => this.showCompareDialog());
         document.getElementById('limit-test-btn')?.addEventListener('click', () => this.startLimitTest());
         document.getElementById('warmup-local-btn')?.addEventListener('click', () => this.runWarmup());
         document.getElementById('batch-all-btn')?.addEventListener('click', () => this.runBatchAll());
+        document.getElementById('run-selected-btn')?.addEventListener('click', () => this.runSelectedTests());
+        document.getElementById('single-warmup-btn')?.addEventListener('click', () => this.runWarmup());
+        document.getElementById('single-run-btn')?.addEventListener('click', () => this.runSelectedTests());
+        document.getElementById('batch-warmup-btn')?.addEventListener('click', () => this.runWarmup());
+        document.getElementById('batch-run-btn')?.addEventListener('click', () => this.runBatchAll());
+        document.getElementById('limit-warmup-btn')?.addEventListener('click', () => this.runWarmup());
+        document.getElementById('limit-run-btn')?.addEventListener('click', () => this.startLimitTest());
         document.getElementById('runner-abort-btn')?.addEventListener('click', () => this.requestRunnerAbort());
         document.getElementById('preview-html-btn')?.addEventListener('click', () => {
             if (!this.state.currentRun?.output) {
@@ -562,32 +650,72 @@ const UI = {
         document.getElementById('eval-fail-with-feedback')?.addEventListener('click', () => this.showFeedbackSection());
         document.getElementById('eval-submit-fail')?.addEventListener('click', () => this.submitEvaluation(false));
     },
-
     updateActionButtons() {
         const hasTest = !!this.state.selectedTest;
         const hasModel = !!this.state.selectedModel;
         const hasLimitTest = this.state.tests.some(t => t.category === 'limit-testing');
+        const isLocalSelected = this.state.selectedModel?.provider === 'ollama';
+        const warmupReady = !isLocalSelected || this.state.warmupModelId === this.state.selectedModel?.model;
+        const selectedCount = document.querySelectorAll('.test-item-checkbox:checked').length;
 
-        document.getElementById('start-test-btn').disabled = !(hasTest && hasModel);
-        document.getElementById('compare-btn').disabled = !hasTest;
+        const startBtn = document.getElementById('start-test-btn');
+        if (startBtn) startBtn.disabled = !(hasTest && hasModel);
+        const compareBtn = document.getElementById('compare-btn');
+        if (compareBtn) compareBtn.disabled = !hasTest;
         const startTop = document.getElementById('start-test-btn-top');
         if (startTop) startTop.disabled = !(hasTest && hasModel);
         const compareTop = document.getElementById('compare-btn-top');
         if (compareTop) compareTop.disabled = !hasTest;
 
-        // Limit Test Button - nur Modell nötig
+        const warmupButtons = ['warmup-local-btn', 'single-warmup-btn', 'batch-warmup-btn', 'limit-warmup-btn'];
+        warmupButtons.forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) btn.disabled = !isLocalSelected || this.state.benchmarkRunning;
+        });
+        const warmupNotes = ['single-warmup-note', 'batch-warmup-note', 'limit-warmup-note'];
+        warmupNotes.forEach(id => {
+            const note = document.getElementById(id);
+            if (note) {
+                note.style.display = isLocalSelected && !warmupReady ? 'block' : 'none';
+            }
+        });
+
+        const singleRunBtn = document.getElementById('single-run-btn');
+        if (singleRunBtn) {
+            singleRunBtn.disabled = !(hasModel && selectedCount > 0 && warmupReady) || this.state.benchmarkRunning;
+            const countEl = document.getElementById('single-count');
+            if (countEl) countEl.textContent = selectedCount;
+        }
+
+        const batchRunBtn = document.getElementById('batch-run-btn');
+        if (batchRunBtn) {
+            const selectionMode = document.querySelector('input[name="batch-selection"]:checked')?.value || 'all';
+            let batchEnabled = hasModel && warmupReady && !this.state.benchmarkRunning;
+            if (selectionMode === 'selected') {
+                batchEnabled = batchEnabled && selectedCount > 0;
+            } else {
+                const selectedCategories = Array.from(document.querySelectorAll('.batch-category'))
+                    .filter(input => input.checked)
+                    .map(input => input.value);
+                const available = this.state.tests.some(test =>
+                    selectedCategories.includes(test.category) && test.category !== 'limit-testing'
+                );
+                batchEnabled = batchEnabled && selectedCategories.length > 0 && available;
+            }
+            batchRunBtn.disabled = !batchEnabled;
+        }
+
+        const limitRunBtn = document.getElementById('limit-run-btn');
+        if (limitRunBtn) {
+            limitRunBtn.disabled = !(hasModel && hasLimitTest && warmupReady) || this.state.benchmarkRunning;
+        }
+
         const limitBtn = document.getElementById('limit-test-btn');
         if (limitBtn) limitBtn.disabled = !(hasModel && hasLimitTest);
 
-        const warmupBtn = document.getElementById('warmup-local-btn');
-        if (warmupBtn) {
-            const isLocalSelected = this.state.selectedModel?.provider === 'ollama';
-            warmupBtn.disabled = !isLocalSelected || this.state.benchmarkRunning;
-        }
-
         const batchAllBtn = document.getElementById('batch-all-btn');
         if (batchAllBtn) {
-            batchAllBtn.disabled = !(hasModel && this.state.tests.length > 0) || this.state.benchmarkRunning;
+            batchAllBtn.disabled = !(hasModel && this.state.tests.length > 0 && warmupReady) || this.state.benchmarkRunning;
         }
     },
 
@@ -598,6 +726,57 @@ const UI = {
         this.state.runnerAbortController = new AbortController();
         this.state.runnerCancelRequested = false;
         this.setAbortButtonEnabled(true);
+        this.resetRunnerUI();
+    },
+
+    resetRunnerUI() {
+        // Reset Output
+        document.getElementById('runner-prompt').textContent = '';
+        document.getElementById('runner-output').textContent = 'Warte auf Antwort...';
+
+        // Hide/Reset all sections
+        document.getElementById('runner-metrics').style.display = 'none';
+        document.getElementById('check-result').style.display = 'none';
+        document.getElementById('manual-eval').style.display = 'none';
+        document.getElementById('runner-progress').style.display = 'none';
+
+        // Reset buttons
+        const previewBtn = document.getElementById('preview-html-btn');
+        if (previewBtn) previewBtn.style.display = 'none';
+
+        const debugBtn = document.getElementById('debug-analyze-btn');
+        if (debugBtn) debugBtn.style.display = 'none';
+
+        const debugResult = document.getElementById('debug-analysis-result');
+        if (debugResult) debugResult.style.display = 'none';
+
+        // Reset retry history
+        const retryHistory = document.getElementById('retry-history-panel');
+        if (retryHistory) retryHistory.style.display = 'none';
+
+        // Reset output toggle
+        const outputEl = document.getElementById('runner-output');
+        if (outputEl) {
+            outputEl.classList.remove('expanded');
+            outputEl.classList.remove('collapsed');
+        }
+
+        const toggleBtn = document.getElementById('toggle-output-btn');
+        if (toggleBtn) toggleBtn.textContent = '▼';
+    },
+
+    resetRunnerUIBetweenTests() {
+        // Leichteres Reset zwischen Tests in einem Batch
+        document.getElementById('runner-output').textContent = 'Warte auf Antwort...';
+        document.getElementById('runner-metrics').style.display = 'none';
+        document.getElementById('check-result').style.display = 'none';
+
+        // Preview/Debug Buttons verstecken (werden bei Bedarf wieder angezeigt)
+        const previewBtn = document.getElementById('preview-html-btn');
+        if (previewBtn) previewBtn.style.display = 'none';
+
+        const debugBtn = document.getElementById('debug-analyze-btn');
+        if (debugBtn) debugBtn.style.display = 'none';
     },
 
     finishRunnerOperation() {
@@ -679,6 +858,13 @@ const UI = {
         return this.state.tests[0] || null;
     },
 
+    ensureWarmupReady() {
+        if (this.state.selectedModel?.provider !== 'ollama') return true;
+        if (this.state.warmupModelId === this.state.selectedModel.model) return true;
+        this.showError('Bitte zuerst Warm-up fuer das lokale Modell ausfuehren.');
+        return false;
+    },
+
     setProgress(current, total) {
         const progressEl = document.getElementById('runner-progress');
         if (!progressEl) return;
@@ -746,12 +932,15 @@ const UI = {
 
         if (aborted || this.isRunnerAbortRequested()) {
             this.handleRunnerAbort('Warm-up abgebrochen.');
+            this.state.warmupModelId = null;
         } else if (errors.length > 0) {
             this.setRunnerStatus('failed', 'Warm-up mit Fehlern');
             document.getElementById('runner-output').textContent = `Warm-up beendet mit Fehlern:\n${errors.join('\n')}`;
+            this.state.warmupModelId = null;
         } else {
             this.setRunnerStatus('success', 'Warm-up abgeschlossen');
             document.getElementById('runner-output').textContent = 'Warm-up abgeschlossen.';
+            this.state.warmupModelId = localModel.id;
         }
 
         this.state.benchmarkRunning = false;
@@ -764,23 +953,33 @@ const UI = {
             this.showError('Bitte zuerst ein Modell waehlen.');
             return;
         }
+        if (!this.ensureWarmupReady()) {
+            return;
+        }
 
         const iterations = parseInt(document.getElementById('batch-iterations')?.value, 10)
             || CONFIG.benchmark?.batchIterations
             || 5;
-        const autoOnly = document.getElementById('batch-auto-only')?.checked ?? true;
-        const selectedCategories = Array.from(document.querySelectorAll('.batch-category'))
-            .filter(input => input.checked)
-            .map(input => input.value);
-        const filteredByCategory = this.state.tests.filter(test =>
-            selectedCategories.includes(test.category)
-        );
-        const tests = autoOnly
-            ? filteredByCategory.filter(test => test.evaluationType === 'auto')
-            : filteredByCategory;
+        const selectionMode = document.querySelector('input[name="batch-selection"]:checked')?.value || 'all';
+
+        let tests = [];
+        if (selectionMode === 'selected') {
+            const selectedTestIds = Array.from(document.querySelectorAll('.test-item-checkbox:checked'))
+                .map(cb => cb.dataset.testId);
+            tests = this.state.tests.filter(test =>
+                selectedTestIds.includes(test.id) && test.category !== 'limit-testing'
+            );
+        } else {
+            const selectedCategories = Array.from(document.querySelectorAll('.batch-category'))
+                .filter(input => input.checked)
+                .map(input => input.value);
+            tests = this.state.tests.filter(test =>
+                selectedCategories.includes(test.category) && test.category !== 'limit-testing'
+            );
+        }
 
         if (tests.length === 0) {
-            this.showError('Keine passenden Tests fuer Batch-All gefunden.');
+            this.showError('Keine passenden Tests fuer Batch gefunden.');
             return;
         }
 
@@ -806,8 +1005,12 @@ const UI = {
                 break;
             }
             const test = tests[i];
+
+            // Reset für jeden Test
+            this.resetRunnerUIBetweenTests();
+
             document.getElementById('runner-test-name').textContent = test.name;
-            document.getElementById('runner-output').textContent = `Batch-All: ${test.name} (${i + 1}/${total})`;
+            document.getElementById('runner-prompt').textContent = test.prompt;
             this.setProgress(i, total);
 
             try {
@@ -850,6 +1053,175 @@ const UI = {
         this.state.benchmarkRunning = false;
         this.updateActionButtons();
         this.finishRunnerOperation();
+    },
+    updateSelectedTestsCount() {
+        const checkboxes = document.querySelectorAll('.test-item-checkbox:checked');
+        const count = checkboxes.length;
+        const countEl = document.getElementById('selected-count');
+        const btn = document.getElementById('run-selected-btn');
+
+        if (countEl) countEl.textContent = count;
+        if (btn) {
+            btn.disabled = count == 0;
+            btn.textContent = count == 0 ? 'Keine Tests ausgewaehlt' : `${count} Test${count > 1 ? 's' : ''} ausfuehren`;
+        }
+
+        const selectedTestIds = Array.from(checkboxes).map(cb => cb.dataset.testId);
+        const selectedTests = this.state.tests.filter(test => selectedTestIds.includes(test.id));
+
+        const renderList = (listEl) => {
+            if (!listEl) return;
+            if (count == 0) {
+                listEl.innerHTML = '<div class="selected-tests-header">Markierte Tests:</div><p class="info-text-empty">Keine Tests ausgewaehlt</p>';
+                return;
+            }
+            listEl.innerHTML = `
+                <div class="selected-tests-header">Markierte Tests: (${count})</div>
+                <ul class="selected-tests-items">
+                    ${selectedTests.map(test => `
+                        <li class="selected-test-item">
+                            <span class="selected-test-icon">${this.getTestCategoryIcon(test.category)}</span>
+                            <span class="selected-test-name">${this.escapeHtml(test.name)}</span>
+                            <button class="remove-test-btn" data-test-id="${test.id}" title="Entfernen">x</button>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+
+            listEl.querySelectorAll('.remove-test-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const testId = btn.dataset.testId;
+                    const checkbox = document.querySelector(`.test-item-checkbox[data-test-id="${testId}"]`);
+                    if (checkbox) {
+                        checkbox.checked = false;
+                        this.updateSelectedTestsCount();
+                    }
+                });
+            });
+        };
+
+        renderList(document.getElementById('selected-tests-list'));
+        renderList(document.getElementById('single-selected-tests'));
+        renderList(document.getElementById('batch-selected-tests'));
+
+        this.updateActionButtons();
+    },
+
+    getTestCategoryIcon(category) {
+        const categoryInfo = CONFIG.categories[category];
+        return categoryInfo ? categoryInfo.icon : '📝';
+    },
+
+    async runSelectedTests() {
+        if (!this.state.selectedModel) {
+            this.showError('Bitte zuerst ein Modell waehlen.');
+            return;
+        }
+        if (!this.ensureWarmupReady()) {
+            return;
+        }
+
+        const checkboxes = document.querySelectorAll('.test-item-checkbox:checked');
+        if (checkboxes.length === 0) {
+            this.showError('Bitte mindestens einen Test auswaehlen.');
+            return;
+        }
+
+        const selectedTestIds = Array.from(checkboxes).map(cb => cb.dataset.testId);
+        const tests = this.state.tests.filter(test => selectedTestIds.includes(test.id));
+        const { provider, model } = this.state.selectedModel;
+
+        this.state.benchmarkRunning = true;
+        this.updateActionButtons();
+        this.switchView('runner');
+        this.setRunnerStatus('running', 'Einzelne Tests laufen...');
+        this.beginRunnerOperation();
+
+        const options = { temperature: this.getTemperature() };
+        const total = tests.length;
+        const errors = [];
+        let aborted = false;
+
+        document.getElementById('runner-mode').textContent = `single-run (${tests.length} tests)`;
+        document.getElementById('runner-model-name').textContent = `${provider}/${model}`;
+
+        for (let i = 0; i < tests.length; i++) {
+            if (this.isRunnerAbortRequested()) {
+                aborted = true;
+                break;
+            }
+            const test = tests[i];
+
+            // Setze aktuellen Test
+            this.state.selectedTest = test;
+
+            // Reset für jeden Test
+            this.resetRunnerUIBetweenTests();
+
+            document.getElementById('runner-test-name').textContent = test.name;
+            document.getElementById('runner-prompt').textContent = test.prompt;
+            this.setProgress(i, total);
+
+            try {
+                this.state.runnerInFlight = true;
+
+                // Erkennung des Test-Typs und entsprechende Ausführung
+                if (test.category === 'limit-testing') {
+                    // Limit Testing: Manual Retry System
+                    this.state.isLimitTestMode = true;
+                    const maxAttempts = parseInt(document.getElementById('limit-max-attempts')?.value, 10) || 5;
+                    await this.startManualRetryFlow(maxAttempts);
+                    this.state.isLimitTestMode = false;
+                } else if (test.evaluationType === 'manual') {
+                    // Manual Test: Single Run mit manueller Evaluation
+                    const run = await API.runSingle(test.id, provider, model, options, null, {
+                        signal: this.getRunnerSignal()
+                    });
+                    this.displaySingleResult(run);
+                } else {
+                    // Auto Test: Single Run
+                    const run = await API.runSingle(test.id, provider, model, options, null, {
+                        signal: this.getRunnerSignal()
+                    });
+                    this.displaySingleResult(run);
+                }
+            } catch (error) {
+                if (this.isAbortError(error)) {
+                    aborted = true;
+                    break;
+                }
+                errors.push(`${test.name}: ${error.message}`);
+                document.getElementById('runner-output').textContent = `Fehler bei ${test.name}: ${error.message}`;
+            } finally {
+                this.state.runnerInFlight = false;
+            }
+
+            this.setProgress(i + 1, total);
+
+            // Kurze Pause zwischen Tests
+            if (i < tests.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+
+        if (aborted || this.isRunnerAbortRequested()) {
+            this.handleRunnerAbort('Test-Durchlauf abgebrochen.');
+        } else if (errors.length > 0) {
+            this.setRunnerStatus('failed', 'Test-Durchlauf mit Fehlern');
+            document.getElementById('runner-output').textContent = `Test-Durchlauf beendet mit Fehlern:\n${errors.join('\n')}`;
+        } else {
+            this.setRunnerStatus('success', 'Test-Durchlauf abgeschlossen');
+            document.getElementById('runner-output').textContent = 'Alle Tests abgeschlossen.';
+        }
+
+        this.state.benchmarkRunning = false;
+        this.updateActionButtons();
+        this.finishRunnerOperation();
+
+        // Checkboxen zurücksetzen
+        document.querySelectorAll('.test-item-checkbox:checked').forEach(cb => cb.checked = false);
+        this.updateSelectedTestsCount();
     },
 
     /**
@@ -1286,7 +1658,10 @@ const UI = {
     },
 
     renderStatsTable(tableId, data, showLatency) {
-        const tbody = document.querySelector(`#${tableId} tbody`);
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        const tbody = table.querySelector('tbody');
+        if (!tbody) return;
         if (!data || Object.keys(data).length === 0) {
             tbody.innerHTML = `<tr><td colspan="${showLatency ? 8 : 5}">Keine Daten</td></tr>`;
             return;
@@ -1714,7 +2089,10 @@ const UI = {
      */
     async startLimitTest() {
         if (!this.state.selectedModel) {
-            this.showError('Bitte zuerst ein Modell auswählen.');
+            this.showError('Bitte zuerst ein Modell auswaehlen.');
+            return;
+        }
+        if (!this.ensureWarmupReady()) {
             return;
         }
 
@@ -1743,8 +2121,8 @@ const UI = {
         this.state.manualRetryHistory = null;
         this.updateRetryHistoryPanel();
 
-        // Starte mit 5 Retries
-        const maxAttempts = 5;
+        // Starte mit konfigurierten Retries
+        const maxAttempts = parseInt(document.getElementById('limit-max-attempts')?.value, 10) || 5;
         this.beginRunnerOperation();
 
         // Update Runner Info

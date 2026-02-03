@@ -74,20 +74,32 @@ List all issues found:`
 const API = {
     async fetch(endpoint, options = {}) {
         const url = `${CONFIG.apiUrl}${endpoint}`;
-        const response = await fetch(url, {
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            },
-            ...options
-        });
 
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({ error: response.statusText }));
-            throw new Error(error.error || 'API Error');
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                ...options
+            });
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ error: response.statusText }));
+                throw new Error(error.error || 'API Error');
+            }
+
+            return response.json();
+        } catch (error) {
+            console.error(`[API] Fetch error for ${endpoint}:`, error);
+            if (error.name === 'AbortError') {
+                throw new Error('Request wurde abgebrochen');
+            }
+            if (error.message === 'Failed to fetch' || error.message.includes('NetworkError')) {
+                throw new Error('Backend nicht erreichbar. Prüfe ob der Server läuft (npm start)');
+            }
+            throw error;
         }
-
-        return response.json();
     },
 
     // Tests
