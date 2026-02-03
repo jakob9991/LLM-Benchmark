@@ -1,0 +1,82 @@
+/* ===== Logs View ===== */
+.log-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.log-filters select {
+    padding: 0.5rem 1rem;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.log-filters select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.logs-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.log-entry {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.log-entry:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.log-status {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.log-status.success {
+    background-color: var(--success-color);
+}
+
+.log-status.failed {
+    background-color: var(--error-color);
+}
+
+.log-status.pending {
+    background-color: var(--warning-color);
+}
+
+.log-info {
+    flex: 1;
+}
+
+.log-test-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.log-details {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.log-timestamp {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-left: auto;
+    flex-shrink: 0;
+}

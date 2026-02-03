@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Benchmark Tester</title>
+
+    <!-- CSS Modules -->
+    <link rel="stylesheet" href="src/css/styles.css">
+    <link rel="stylesheet" href="src/css/base.css">
+    <link rel="stylesheet" href="src/css/layout.css">
+    <link rel="stylesheet" href="src/css/buttons.css">
+    <link rel="stylesheet" href="src/css/models.css">
+    <link rel="stylesheet" href="src/css/tests.css">
+    <link rel="stylesheet" href="src/css/options.css">
+    <link rel="stylesheet" href="src/css/runner.css">
+    <link rel="stylesheet" href="src/css/logs.css">
+    <link rel="stylesheet" href="src/css/metrics.css">
+    <link rel="stylesheet" href="src/css/modal.css">
+    <link rel="stylesheet" href="src/css/responsive.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header mit Navigation -->
+        <div class="header">
+            <h1>🧪 LLM Benchmark Tester</h1>
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-view="test">Tests</button>
+                <button class="nav-tab" data-view="runner">Runner</button>
+                <button class="nav-tab" data-view="runs">Runs</button>
+                <button class="nav-tab" data-view="metrics">Metriken</button>
+            </div>
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span class="status-text">Backend verbinden...</span>
+            </div>
+        </div>
+
+        <!-- Test View -->
+        <div id="test-view" class="view active">
+            <div class="main-content">
+                <!-- Provider Status -->
+                <div class="provider-status">
+                    <div id="ollama-status" class="provider-card">
+                        <div class="provider-header">
+                            <span class="provider-icon">🦙</span>
+                            <span class="provider-name">Ollama</span>
+                        </div>
+                        <div class="provider-state">Lädt...</div>
+                    </div>
+                    <div id="openrouter-status" class="provider-card">
+                        <div class="provider-header">
+                            <span class="provider-icon">🌐</span>
+                            <span class="provider-name">OpenRouter</span>
+                        </div>
+                        <div class="provider-state">Lädt...</div>
+                    </div>
+                </div>
+
+                <!-- Model Selection -->
+                <div class="model-selection">
+                    <!-- Ollama Models -->
+                    <div id="ollama-models" class="model-section">
+                        <h4>🦙 Ollama Modelle</h4>
+                        <div id="ollama-model-list" class="model-list"></div>
+                    </div>
+
+                    <!-- OpenRouter Models -->
+                    <div id="openrouter-models" class="model-section">
+                        <h4>🌐 OpenRouter</h4>
+                        <input
+                            type="text"
+                            id="model-search"
+                            class="model-search"
+                            placeholder="Suche Modell..."
+                        />
+                        <select id="openrouter-model-select" class="model-select" size="1"></select>
+
+                        <div id="selected-model-info" class="model-info" style="display: none;">
+                            <div class="model-name"></div>
+                            <div class="model-context"></div>
+                            <div class="model-price"></div>
+                        </div>
+
+                        <div class="default-model-controls">
+                            <label>
+                                <input type="checkbox" id="openrouter-default-toggle" />
+                                <span>Als Standard setzen</span>
+                            </label>
+                            <button id="openrouter-default-btn" class="btn btn-secondary" style="display: none;">
+                                Standard ändern
+                            </button>
+                            <div id="openrouter-default-status" class="default-status"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Filters -->
+                <div class="test-filters">
+                    <select id="filter-category">
+                        <option value="">Alle Kategorien</option>
+                    </select>
+                    <select id="filter-difficulty">
+                        <option value="">Alle Schwierigkeiten</option>
+                    </select>
+                </div>
+
+                <!-- Test List -->
+                <div class="test-list-container">
+                    <h3>Tests</h3>
+                    <div id="test-list" class="test-list"></div>
+                </div>
+
+                <!-- Run Options -->
+                <div class="run-options">
+                    <h3>Test-Optionen</h3>
+
+                    <div class="options-grid">
+                        <div class="option-group">
+                            <label for="run-mode">Modus</label>
+                            <select id="run-mode">
+                                <option value="single">Single Run</option>
+                                <option value="batch">Batch (mehrfach)</option>
+                                <option value="retry">Retry (mit Feedback)</option>
+                            </select>
+                        </div>
+
+                        <div class="option-group">
+                            <label for="temperature">Temperature</label>
+                            <input type="number" id="temperature" min="0" max="2" step="0.1" value="0.1" />
+                        </div>
+
+                        <div class="option-group" id="iterations-label" style="display: none;">
+                            <label for="iterations">Iterationen</label>
+                            <input type="number" id="iterations" min="1" max="20" value="5" />
+                        </div>
+
+                        <div class="option-group" id="max-attempts-label" style="display: none;">
+                            <label for="max-attempts">Max. Versuche</label>
+                            <input type="number" id="max-attempts" min="1" max="10" value="3" />
+                        </div>
+                    </div>
+
+                    <div class="action-bar">
+                        <button id="start-test-btn" class="btn btn-primary" disabled>
+                            🚀 Test starten
+                        </button>
+                        <button id="compare-btn" class="btn btn-secondary" disabled>
+                            📊 Vergleichen
+                        </button>
+                    </div>
+
+                    <div class="action-bar-top">
+                        <button id="start-test-btn-top" class="btn btn-secondary btn-small" disabled>
+                            Schnellstart
+                        </button>
+                        <button id="compare-btn-top" class="btn btn-secondary btn-small" disabled>
+                            Vergleichen
+                        </button>
+                        <button id="limit-test-btn" class="btn btn-secondary btn-small" disabled>
+                            Limit Test
+                        </button>
+                        <button id="warmup-local-btn" class="btn btn-secondary btn-small">
+                            🔥 Warmup (Local)
+                        </button>
+                        <button id="batch-all-btn" class="btn btn-secondary btn-small">
+                            📦 Batch All
+                        </button>
+                    </div>
+
+                    <!-- Batch All Options -->
+                    <div class="batch-all-options">
+                        <h4>Batch All Optionen</h4>
+
+                        <div class="option-group">
+                            <label for="batch-iterations">Iterationen pro Test</label>
+                            <input type="number" id="batch-iterations" min="1" max="20" value="3" />
+                        </div>
+
+                        <div class="option-group">
+                            <label>
+                                <input type="checkbox" id="batch-auto-only" checked />
+                                Nur Auto-Tests
+                            </label>
+                        </div>
+
+                        <div class="batch-categories">
+                            <label><input type="checkbox" class="batch-category" value="code" checked /> Code</label>
+                            <label><input type="checkbox" class="batch-category" value="math" checked /> Math</label>
+                            <label><input type="checkbox" class="batch-category" value="reasoning" checked /> Reasoning</label>
+                            <label><input type="checkbox" class="batch-category" value="content" checked /> Content</label>
+                            <label><input type="checkbox" class="batch-category" value="structured" checked /> Structured</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Runner View -->
+        <div id="runner-view" class="view runner-view" style="display: none;">
+            <div class="main-content">
+                <!-- Runner Header -->
+                <div class="runner-header">
+                    <div class="runner-info">
+                        <div id="runner-status" class="runner-status">
+                            <span class="status-badge">läuft</span>
+                        </div>
+                        <div class="runner-details">
+                            <div><strong>Test:</strong> <span id="runner-test-name"></span></div>
+                            <div><strong>Modell:</strong> <span id="runner-model-name"></span></div>
+                            <div><strong>Modus:</strong> <span id="runner-mode"></span></div>
+                        </div>
+                    </div>
+                    <button id="runner-abort-btn" class="btn btn-danger" style="display: none;">
+                        ⏹ Abbrechen
+                    </button>
+                </div>
+
+                <!-- Runner Content -->
+                <div class="runner-content">
+                    <!-- Prompt Section -->
+                    <div class="runner-section">
+                        <h3>Prompt</h3>
+                        <pre id="runner-prompt" class="code-block"></pre>
+                    </div>
+
+                    <!-- Output Section -->
+                    <div class="runner-section">
+                        <h3>
+                            Output
+                            <button id="toggle-output-btn" class="btn-icon" title="Minimieren">▼</button>
+                        </h3>
+                        <pre id="runner-output" class="code-block">Warte auf Antwort...</pre>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div id="runner-progress" class="progress-bar" style="display: none;">
+                        <div id="progress-fill" class="progress-fill"></div>
+                        <span id="progress-text" class="progress-text">0%</span>
+                    </div>
+
+                    <!-- Runner Metrics -->
+                    <div id="runner-metrics" class="runner-metrics" style="display: none;">
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-label">Latenz</div>
+                                <div id="metric-latency" class="metric-value">-</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">TTFT</div>
+                                <div id="metric-ttft" class="metric-value">-</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Tokens In</div>
+                                <div id="metric-tokens-in" class="metric-value">-</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Tokens Out</div>
+                                <div id="metric-tokens-out" class="metric-value">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Check Result -->
+                    <div id="check-result" class="check-result" style="display: none;">
+                        <h3>Validierung</h3>
+                        <div id="check-result-content"></div>
+                    </div>
+
+                    <!-- Manual Evaluation -->
+                    <div id="manual-eval" class="manual-eval" style="display: none;">
+                        <h3>
+                            Manuelle Evaluation
+                            <span id="eval-attempt-badge" class="attempt-badge"></span>
+                        </h3>
+                        <div id="manual-criteria" class="criteria-list"></div>
+
+                        <div class="eval-actions">
+                            <button id="eval-pass" class="btn btn-success">✓ Bestanden</button>
+                            <button id="eval-fail-with-feedback" class="btn btn-warning">✗ Mit Feedback</button>
+                        </div>
+
+                        <div id="eval-feedback-section" style="display: none;">
+                            <label for="eval-comment">Feedback für Retry:</label>
+                            <textarea id="eval-comment" rows="4" placeholder="Was war falsch? Was muss verbessert werden?"></textarea>
+                            <button id="eval-submit-fail" class="btn btn-danger">Feedback senden</button>
+                        </div>
+                    </div>
+
+                    <!-- Retry History -->
+                    <div id="retry-history-panel" class="retry-history" style="display: none;">
+                        <h3>Retry History</h3>
+                        <select id="retry-attempt-select"></select>
+
+                        <div class="retry-details">
+                            <div><strong>Letzter Prompt:</strong></div>
+                            <pre id="retry-last-prompt"></pre>
+
+                            <div><strong>Output:</strong></div>
+                            <pre id="retry-attempt-output"></pre>
+
+                            <div><strong>Kommentar:</strong></div>
+                            <pre id="retry-attempt-comment"></pre>
+
+                            <div><strong>Status:</strong> <span id="retry-attempt-status"></span></div>
+
+                            <div><strong>Nächster Prompt:</strong></div>
+                            <pre id="retry-next-prompt"></pre>
+                        </div>
+                    </div>
+
+                    <!-- Runner Actions -->
+                    <div class="runner-actions">
+                        <button id="preview-html-btn" class="btn btn-secondary" style="display: none;">
+                            👁 HTML Preview
+                        </button>
+                        <button id="debug-analyze-btn" class="btn btn-secondary" style="display: none;">
+                            🔍 Debug Analysis
+                        </button>
+                    </div>
+
+                    <!-- Debug Analysis -->
+                    <div id="debug-analysis-result" class="debug-analysis" style="display: none;">
+                        <h3>Debug Analysis (<span id="debug-analysis-model"></span>)</h3>
+                        <div id="debug-analysis-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Runs View -->
+        <div id="runs-view" class="view">
+            <div class="main-content">
+                <div class="view-header">
+                    <h2>Test Runs</h2>
+                    <div class="view-actions">
+                        <button id="refresh-runs-btn" class="btn btn-secondary btn-small">↻ Aktualisieren</button>
+                        <button id="export-json-btn" class="btn btn-secondary btn-small">📥 JSON</button>
+                        <button id="export-csv-btn" class="btn btn-secondary btn-small">📥 CSV</button>
+                        <button id="clear-runs-btn" class="btn btn-danger btn-small">🗑 Löschen</button>
+                    </div>
+                </div>
+
+                <div class="log-filters">
+                    <select id="filter-run-provider">
+                        <option value="">Alle Provider</option>
+                        <option value="ollama">Ollama</option>
+                        <option value="openrouter">OpenRouter</option>
+                    </select>
+                    <select id="filter-run-status">
+                        <option value="">Alle Status</option>
+                        <option value="success">Erfolg</option>
+                        <option value="error">Fehler</option>
+                    </select>
+                    <select id="filter-run-passed">
+                        <option value="">Alle Ergebnisse</option>
+                        <option value="true">Bestanden</option>
+                        <option value="false">Fehlgeschlagen</option>
+                    </select>
+                </div>
+
+                <div id="runs-container" class="logs-container"></div>
+            </div>
+        </div>
+
+        <!-- Metrics View -->
+        <div id="metrics-view" class="view">
+            <div class="main-content">
+                <div class="view-header">
+                    <h2>Metriken & Statistiken</h2>
+                    <button id="refresh-stats-btn" class="btn btn-secondary btn-small">↻ Aktualisieren</button>
+                </div>
+
+                <div class="stats-overview">
+                    <div class="metric-card">
+                        <h3>Gesamt Tests</h3>
+                        <div id="stat-total" class="metric-value">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Bestanden</h3>
+                        <div id="stat-passed" class="metric-value success">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Fehlgeschlagen</h3>
+                        <div id="stat-failed" class="metric-value error">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Erfolgsrate</h3>
+                        <div id="stat-success-rate" class="metric-value">0%</div>
+                    </div>
+                </div>
+
+                <div class="metrics-tables">
+                    <section>
+                        <h3>Performance nach Modell</h3>
+                        <table id="stats-by-model" class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Modell</th>
+                                    <th>Tests</th>
+                                    <th>Erfolgsrate</th>
+                                    <th>Ø Latenz</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </section>
+
+                    <section>
+                        <h3>Performance nach Test</h3>
+                        <table id="stats-by-test" class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Test</th>
+                                    <th>Durchläufe</th>
+                                    <th>Erfolgsrate</th>
+                                    <th>Ø Latenz</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Modal -->
+        <div id="detail-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modal-title"></h2>
+                    <button class="modal-close">×</button>
+                </div>
+                <div id="modal-body" class="modal-body"></div>
+                <div class="modal-footer">
+                    <button id="modal-preview-btn" class="btn btn-secondary btn-small" style="display: none;">
+                        👁 Preview
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="src/js/config.js"></script>
+    <script src="src/js/ui.js"></script>
+    <script src="src/js/app.js"></script>
+</body>
+</html>

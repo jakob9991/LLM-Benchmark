@@ -1,0 +1,25 @@
+{
+  "name": "llm-benchmark-tester",
+  "version": "1.0.0",
+  "description": "Benchmark-Tool zum Vergleich von LLM-Modellen (Local vs Cloud)",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "keywords": [
+    "llm",
+    "benchmark",
+    "ollama",
+    "openai",
+    "testing"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "uuid": "^9.0.0"
+  }
+}
