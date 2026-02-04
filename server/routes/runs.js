@@ -19,6 +19,7 @@ router.get('/', async (req, res) => {
             fromDate: req.query.fromDate,
             toDate: req.query.toDate,
             includeWarmup: req.query.includeWarmup === 'true',
+            includeDebug: req.query.includeDebug === 'true',
             limit: req.query.limit ? parseInt(req.query.limit) : 100
         };
 
@@ -61,7 +62,8 @@ router.get('/export', async (req, res) => {
             model: req.query.model,
             fromDate: req.query.fromDate,
             toDate: req.query.toDate,
-            includeWarmup: req.query.includeWarmup === 'true'
+            includeWarmup: req.query.includeWarmup === 'true',
+            includeDebug: req.query.includeDebug === 'true'
         };
 
         const data = await persistence.exportRuns(format, filters);

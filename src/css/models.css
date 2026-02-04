@@ -1,3 +1,83 @@
+/* Auto-generated from styles.css sections. Source of truth: split CSS files. */
+
+/* ===== Model Selection ===== */
+.model-selection {
+    margin-bottom: 2rem;
+}
+
+.model-selection h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+}
+
+.model-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.model-option {
+    cursor: pointer;
+}
+
+.model-option input {
+    display: none;
+}
+
+.model-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    background-color: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    transition: var(--transition-fast);
+}
+
+.model-option input:checked + .model-card {
+    border-color: var(--primary-color);
+    background-color: rgba(79, 70, 229, 0.1);
+}
+
+.model-card:hover {
+    border-color: var(--primary-color);
+}
+
+.model-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.model-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.model-type {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+/* ===== Model Dropdown Enhanced ===== */
+.model-dropdown {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+}
+
+.model-dropdown:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
 /* ===== Provider Status ===== */
 .provider-status {
     display: flex;
@@ -16,19 +96,13 @@
     flex: 1;
 }
 
-.provider-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex: 1;
-}
-
 .provider-icon {
     font-size: 1.5rem;
 }
 
 .provider-name {
     font-weight: 600;
+    flex: 1;
 }
 
 .provider-state {
@@ -52,34 +126,7 @@
     background-color: rgba(245, 158, 11, 0.2);
     color: var(--warning-color);
 }
-
-/* ===== Model Selection ===== */
-.model-selection {
-    margin-bottom: 2rem;
-}
-
-.model-selection h3 {
-    font-size: 1rem;
-    margin-bottom: 1rem;
-    color: var(--text-secondary);
-}
-
-.model-section {
-    margin-bottom: 1.5rem;
-}
-
-.model-section h4 {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-bottom: 0.75rem;
-}
-
-.model-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 0.75rem;
-}
-
+/* ===== Model Option Clickable ===== */
 .model-option {
     display: flex;
     flex-direction: column;
@@ -90,7 +137,6 @@
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: var(--transition-fast);
-    text-align: center;
 }
 
 .model-option:hover {
@@ -102,23 +148,6 @@
     background-color: rgba(79, 70, 229, 0.1);
 }
 
-.model-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-}
-
-.model-name {
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-}
-
-.model-type {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
 .model-size {
     font-size: 0.75rem;
     color: var(--text-muted);
@@ -127,17 +156,59 @@
     border-radius: 4px;
     margin-top: 0.5rem;
 }
+/* ===== Model Selector (OpenRouter Dropdown) ===== */
+.model-section {
+    margin-bottom: 1.5rem;
+}
 
-/* ===== Model Search & Select ===== */
-.model-search {
-    width: 100%;
+.model-section h4 {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.model-selector {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.model-dropdown {
+    flex: 1;
     padding: 0.75rem 1rem;
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     color: var(--text-primary);
     font-size: 0.9rem;
-    margin-bottom: 0.75rem;
+    cursor: pointer;
+    min-width: 300px;
+}
+
+.model-dropdown:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.model-dropdown option {
+    background-color: var(--bg-secondary);
+    padding: 0.5rem;
+}
+
+.model-dropdown optgroup {
+    font-weight: 600;
+    color: var(--primary-color);
+    background-color: var(--bg-tertiary);
+}
+
+.model-search {
+    padding: 0.75rem 1rem;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    min-width: 200px;
 }
 
 .model-search:focus {
@@ -149,76 +220,47 @@
     color: var(--text-muted);
 }
 
-.model-select {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    color: var(--text-primary);
-    font-size: 0.9rem;
+.default-model-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     margin-bottom: 0.75rem;
-    cursor: pointer;
+    flex-wrap: wrap;
 }
 
-.model-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
+.default-model-row .checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.model-select option {
-    background-color: var(--bg-secondary);
-    padding: 0.5rem;
+.default-model-status {
+    font-size: 0.8rem;
+    color: var(--text-muted);
 }
 
-.model-select optgroup {
-    font-weight: 600;
-    color: var(--primary-color);
-    background-color: var(--bg-tertiary);
-}
-
-/* ===== Model Info ===== */
-.model-info {
+.selected-model-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
     padding: 0.75rem 1rem;
     background-color: rgba(79, 70, 229, 0.1);
     border: 1px solid var(--primary-color);
     border-radius: var(--border-radius);
-    margin-bottom: 0.75rem;
 }
 
-.model-info .model-name {
+.selected-model-info .model-name {
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 0.25rem;
 }
 
-.model-info .model-context {
+.selected-model-info .model-context {
     font-size: 0.85rem;
     color: var(--text-secondary);
 }
 
-.model-info .model-price {
+.selected-model-info .model-price {
     font-size: 0.85rem;
     color: var(--success-color);
-    margin-top: 0.25rem;
-}
-
-/* ===== Default Model Controls ===== */
-.default-model-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.default-model-controls label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-.default-status {
-    font-size: 0.8rem;
-    color: var(--text-muted);
+    margin-left: auto;
 }

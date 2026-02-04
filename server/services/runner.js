@@ -8,6 +8,54 @@ const { runAutoCheck } = require('./evaluator');
 const persistence = require('./persistence');
 const { v4: uuidv4 } = require('uuid');
 
+// In-memory cancellation for in-flight requests.
+// This lets the UI kill runs even after a page refresh.
+const activeJobs = new Map(); // jobId -> { controller, meta, startedAt }
+
+function createJob(meta = {}) {
+    const jobId = uuidv4();
+    const controller = new AbortController();
+    activeJobs.set(jobId, {
+        controller,
+        meta,
+        startedAt: new Date().toISOString()
+    });
+    return { jobId, signal: controller.signal };
+}
+
+function finishJob(jobId) {
+    activeJobs.delete(jobId);
+}
+
+function listJobs() {
+    return Array.from(activeJobs.entries()).map(([jobId, job]) => ({
+        jobId,
+        startedAt: job.startedAt,
+        meta: job.meta
+    }));
+}
+
+function cancelJob(jobId) {
+    const job = activeJobs.get(jobId);
+    if (!job) return false;
+    try {
+        job.controller.abort();
+    } catch {
+        // ignore
+    }
+    return true;
+}
+
+function cancelAllJobs() {
+    const ids = Array.from(activeJobs.keys());
+    ids.forEach(id => cancelJob(id));
+    return ids.length;
+}
+
+function isAbortError(err) {
+    return err?.name === 'AbortError' || err?.message === 'The operation was aborted';
+}
+
 /**
  * Führt einen einzelnen Test-Run aus
  * @param {Object} params
@@ -19,7 +67,7 @@ const { v4: uuidv4 } = require('uuid');
  * @param {Function} params.onProgress - Progress Callback
  * @returns {Promise<Object>} - Run Result
  */
-async function runSingle({ test, provider, model, options = {}, meta = {}, onStream = null, onProgress = null }) {
+async function runSingle({ test, provider, model, options = {}, meta = {}, onStream = null, onProgress = null, abortSignal = undefined }) {
     const runId = uuidv4();
     const startTime = Date.now();
 
@@ -41,6 +89,11 @@ async function runSingle({ test, provider, model, options = {}, meta = {}, onStr
     if (onProgress) onProgress({ type: 'start', run });
 
     try {
+        if (abortSignal?.aborted) {
+            const e = new Error('aborted');
+            e.name = 'AbortError';
+            throw e;
+        }
         // Baue Prompt
         const testForRun = meta?.retryContext
             ? { ...test, promptTemplate: meta.retryContext + test.promptTemplate }
@@ -60,7 +113,8 @@ async function runSingle({ test, provider, model, options = {}, meta = {}, onStr
             model,
             prompt,
             options: run.params,
-            onStream
+            onStream,
+            signal: abortSignal
         });
 
         const endTime = Date.now();
@@ -110,12 +164,23 @@ async function runSingle({ test, provider, model, options = {}, meta = {}, onStr
         if (onProgress) onProgress({ type: 'complete', run });
 
     } catch (error) {
-        run.status = 'failed';
-        run.error = error.message;
-        run.completedAt = new Date().toISOString();
-        run.passed = false;
-
-        if (onProgress) onProgress({ type: 'error', run, error });
+        if (isAbortError(error) || abortSignal?.aborted) {
+            run.status = 'aborted';
+            run.error = 'aborted';
+            run.completedAt = new Date().toISOString();
+            run.passed = null;
+            run.metrics = run.metrics || {};
+            run.metrics.t_total_ms = Date.now() - startTime;
+            if (onProgress) onProgress({ type: 'aborted', run, error });
+        } else {
+            run.status = 'failed';
+            run.error = error.message;
+            run.completedAt = new Date().toISOString();
+            run.passed = false;
+            run.metrics = run.metrics || {};
+            run.metrics.t_total_ms = Date.now() - startTime;
+            if (onProgress) onProgress({ type: 'error', run, error });
+        }
     }
 
     // Speichere Run
@@ -135,7 +200,7 @@ async function runSingle({ test, provider, model, options = {}, meta = {}, onStr
  * @param {Function} params.onProgress - Progress Callback
  * @returns {Promise<Object>} - Batch Result mit Aggregation
  */
-async function runBatch({ test, provider, model, iterations = 3, options = {}, onProgress = null }) {
+async function runBatch({ test, provider, model, iterations = 3, options = {}, onProgress = null, abortSignal = undefined }) {
     const batchId = uuidv4();
     const runs = [];
 
@@ -148,6 +213,11 @@ async function runBatch({ test, provider, model, iterations = 3, options = {}, o
     }
 
     for (let i = 0; i < iterations; i++) {
+        if (abortSignal?.aborted) {
+            const e = new Error('aborted');
+            e.name = 'AbortError';
+            throw e;
+        }
         if (onProgress) {
             onProgress({
                 type: 'iteration_start',
@@ -162,6 +232,7 @@ async function runBatch({ test, provider, model, iterations = 3, options = {}, o
             provider,
             model,
             options,
+            abortSignal,
             onProgress: (p) => {
                 if (onProgress) {
                     onProgress({
@@ -180,6 +251,7 @@ async function runBatch({ test, provider, model, iterations = 3, options = {}, o
 
         // Kurze Pause zwischen Runs (Rate Limiting)
         if (i < iterations - 1) {
+            if (abortSignal?.aborted) break;
             await sleep(1000);
         }
     }
@@ -222,13 +294,18 @@ async function runBatch({ test, provider, model, iterations = 3, options = {}, o
  * @param {Function} params.onProgress - Progress Callback
  * @returns {Promise<Object>} - Retry Result
  */
-async function runWithRetry({ test, provider, model, maxAttempts = 3, includeFeedback = true, options = {}, onProgress = null }) {
+async function runWithRetry({ test, provider, model, maxAttempts = 3, includeFeedback = true, options = {}, onProgress = null, abortSignal = undefined }) {
     const retryId = uuidv4();
     const attempts = [];
     let lastRun = null;
     let currentTest = { ...test };
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        if (abortSignal?.aborted) {
+            const e = new Error('aborted');
+            e.name = 'AbortError';
+            throw e;
+        }
         if (onProgress) {
             onProgress({
                 type: 'retry_attempt',
@@ -251,6 +328,7 @@ async function runWithRetry({ test, provider, model, maxAttempts = 3, includeFee
             provider,
             model,
             options,
+            abortSignal,
             onProgress
         });
 
@@ -265,6 +343,7 @@ async function runWithRetry({ test, provider, model, maxAttempts = 3, includeFee
 
         // Kurze Pause vor Retry
         if (attempt < maxAttempts) {
+            if (abortSignal?.aborted) break;
             await sleep(2000);
         }
     }
@@ -427,5 +506,10 @@ module.exports = {
     runSingle,
     runBatch,
     runWithRetry,
-    aggregateRuns
+    aggregateRuns,
+    createJob,
+    finishJob,
+    listJobs,
+    cancelJob,
+    cancelAllJobs
 };

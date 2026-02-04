@@ -1,8 +1,113 @@
+/* Auto-generated from styles.css sections. Source of truth: split CSS files. */
+
+/* ===== Chat View ===== */
+.current-test-info {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.chat-container {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    height: calc(100vh - 350px);
+    min-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+.chat-messages {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.chat-message {
+    max-width: 80%;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+}
+
+.chat-message.user {
+    align-self: flex-end;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.chat-message.assistant {
+    align-self: flex-start;
+    background-color: var(--bg-tertiary);
+}
+
+.chat-message.system {
+    align-self: center;
+    background-color: transparent;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    padding: 0.5rem;
+}
+
+.chat-message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.chat-message-content {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.chat-message-content pre {
+    background-color: var(--bg-primary);
+    padding: 0.75rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+}
+
+.chat-message-content code {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.85rem;
+}
+
+.chat-input-container {
+    display: flex;
+    gap: 1rem;
+}
+
+#chat-input {
+    flex: 1;
+    padding: 0.75rem;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.9rem;
+    resize: none;
+}
+
+#chat-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
 /* ===== Logs View ===== */
+.log-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .log-filters {
     display: flex;
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .log-filters select {
@@ -14,15 +119,29 @@
     font-size: 0.9rem;
 }
 
-.log-filters select:focus {
-    outline: none;
-    border-color: var(--primary-color);
+.log-filters .checkbox-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.log-filters .checkbox-inline input {
+    width: 16px;
+    height: 16px;
 }
 
 .logs-container {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .log-entry {
@@ -45,7 +164,6 @@
     height: 10px;
     border-radius: 50%;
     margin-right: 1rem;
-    flex-shrink: 0;
 }
 
 .log-status.success {
@@ -70,13 +188,11 @@
 }
 
 .log-details {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
 }
 
 .log-timestamp {
     font-size: 0.75rem;
     color: var(--text-muted);
-    margin-left: auto;
-    flex-shrink: 0;
 }

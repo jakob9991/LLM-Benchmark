@@ -2,6 +2,9 @@
  * Haupt-Applikation für den LLM Benchmark Tester
  */
 
+import { UI } from './ui/index.js';
+
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('LLM Benchmark Tester wird gestartet...');
 

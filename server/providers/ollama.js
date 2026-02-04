@@ -43,7 +43,7 @@ class OllamaProvider extends BaseProvider {
         }
     }
 
-    async run({ model, prompt, options = {}, onStream = null }) {
+    async run({ model, prompt, options = {}, onStream = null, signal = undefined }) {
         const startTime = Date.now();
         let timeToFirstToken = null;
 
@@ -70,7 +70,8 @@ class OllamaProvider extends BaseProvider {
             const response = await fetch(`${this.baseUrl}/api/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify(requestBody),
+                signal
             });
 
             if (!response.ok) {

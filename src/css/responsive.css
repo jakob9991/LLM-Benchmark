@@ -1,112 +1,44 @@
+/* Auto-generated from styles.css sections. Source of truth: split CSS files. */
+
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
+    .test-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .right-column {
+        position: static;
+    }
+
+    .mode-tabs {
+        flex-direction: column;
+    }
+
+    .mode-actions {
+        flex-direction: column;
+    }
+
+    .selection-mode {
+        flex-direction: column;
+    }
     .header {
         flex-direction: column;
-        align-items: flex-start;
         gap: 1rem;
-    }
-
-    .header h1 {
-        font-size: 1.25rem;
-    }
-
-    .nav-tabs {
-        flex-wrap: wrap;
-        width: 100%;
-    }
-
-    .status-indicator {
-        width: 100%;
     }
 
     .main-content {
         padding: 1rem;
     }
 
-    .provider-status {
-        flex-direction: column;
-    }
-
-    .test-runner-controls {
-        grid-template-columns: 1fr;
-    }
-
-    .test-layout {
-        grid-template-columns: 1fr;
-    }
-
-    .batch-buttons {
-        flex-direction: column;
-    }
-
-    .runner-options {
-        grid-template-columns: 1fr;
-    }
-
-    .runner-action-buttons {
-        flex-direction: column;
-    }
-
-    .model-list {
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    }
-
-    .test-filters {
-        flex-direction: column;
-    }
-
-    .options-grid {
-        flex-direction: column;
-    }
-
-    .action-bar {
-        flex-direction: column;
-    }
-
-    .action-bar-top {
-        flex-direction: column;
-    }
-
-    .metrics-grid {
+    .model-options {
         grid-template-columns: 1fr 1fr;
     }
 
-    .stats-overview {
-        grid-template-columns: 1fr 1fr;
+    .chat-message {
+        max-width: 90%;
     }
 
-    .runner-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .runner-info {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .view-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-
-    .view-actions {
-        width: 100%;
-        justify-content: flex-start;
-    }
-}
-
-@media (max-width: 480px) {
-    .model-list {
-        grid-template-columns: 1fr;
-    }
-
-    .metrics-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .stats-overview {
+    .benchmark-grid {
         grid-template-columns: 1fr;
     }
 }

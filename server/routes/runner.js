@@ -4,13 +4,34 @@
 
 const express = require('express');
 const router = express.Router();
-const { runSingle, runBatch, runWithRetry } = require('../services/runner');
+const { runSingle, runBatch, runWithRetry, createJob, finishJob, listJobs, cancelJob, cancelAllJobs } = require('../services/runner');
 const persistence = require('../services/persistence');
+
+// GET /api/runner/active - Liste aktiver Jobs (fuer UI nach Refresh)
+router.get('/active', (req, res) => {
+    res.json({ jobs: listJobs() });
+});
+
+// POST /api/runner/cancel-all - Bricht alle laufenden Jobs ab
+router.post('/cancel-all', (req, res) => {
+    const cancelled = cancelAllJobs();
+    res.json({ cancelled });
+});
+
+// POST /api/runner/cancel/:jobId - Bricht einen Job ab
+router.post('/cancel/:jobId', (req, res) => {
+    const ok = cancelJob(req.params.jobId);
+    if (!ok) return res.status(404).json({ error: 'Job nicht gefunden' });
+    res.json({ cancelled: true });
+});
 
 // POST /api/runner/single - Einzelnen Test ausführen
 router.post('/single', async (req, res) => {
+    let job = null;
     try {
         const { testId, provider, model, options, meta } = req.body;
+
+        job = createJob({ type: 'single', testId, provider, model });
 
         // Validierung
         if (!testId || !provider || !model) {
@@ -33,19 +54,25 @@ router.post('/single', async (req, res) => {
             provider,
             model,
             options,
-            meta
+            meta,
+            abortSignal: job.signal
         });
 
-        res.json(result);
+        res.json({ ...result, jobId: job.jobId });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    } finally {
+        if (job) finishJob(job.jobId);
     }
 });
 
 // POST /api/runner/batch - Test mehrfach ausführen
 router.post('/batch', async (req, res) => {
+    let job = null;
     try {
         const { testId, provider, model, iterations = 3, options } = req.body;
+
+        job = createJob({ type: 'batch', testId, provider, model, iterations });
 
         // Validierung
         if (!testId || !provider || !model) {
@@ -74,19 +101,25 @@ router.post('/batch', async (req, res) => {
             provider,
             model,
             iterations,
-            options
+            options,
+            abortSignal: job.signal
         });
 
-        res.json(result);
+        res.json({ ...result, jobId: job.jobId });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    } finally {
+        if (job) finishJob(job.jobId);
     }
 });
 
 // POST /api/runner/retry - Test mit Retry ausführen
 router.post('/retry', async (req, res) => {
+    let job = null;
     try {
         const { testId, provider, model, maxAttempts = 3, includeFeedback = true, options } = req.body;
+
+        job = createJob({ type: 'retry', testId, provider, model, maxAttempts });
 
         // Validierung
         if (!testId || !provider || !model) {
@@ -116,12 +149,15 @@ router.post('/retry', async (req, res) => {
             model,
             maxAttempts,
             includeFeedback,
-            options
+            options,
+            abortSignal: job.signal
         });
 
-        res.json(result);
+        res.json({ ...result, jobId: job.jobId });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    } finally {
+        if (job) finishJob(job.jobId);
     }
 });
 
@@ -178,6 +214,8 @@ List all issues found:`;
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    } finally {
+        if (job) finishJob(job.jobId);
     }
 });
 
@@ -236,6 +274,8 @@ router.post('/compare', async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    } finally {
+        if (job) finishJob(job.jobId);
     }
 });
 

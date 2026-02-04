@@ -200,8 +200,24 @@ const API = {
     },
 
     // Health
-    async checkHealth() {
-        return this.fetch('/health');
+    async checkHealth(options = {}) {
+        return this.fetch('/health', options);
+    },
+
+    // Runner job control (server-side)
+    async getActiveRunnerJobs() {
+        return this.fetch('/runner/active');
+    },
+
+    async cancelAllRunnerJobs() {
+        return this.fetch('/runner/cancel-all', { method: 'POST' });
+    },
+
+    async cancelRunnerJob(jobId) {
+        return this.fetch(`/runner/cancel/${encodeURIComponent(jobId)}`, { method: 'POST' });
     }
 };
 
+export { CONFIG, API };
+window.CONFIG = CONFIG;
+window.API = API;

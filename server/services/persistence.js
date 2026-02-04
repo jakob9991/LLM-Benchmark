@@ -94,6 +94,11 @@ async function filterRuns(filters = {}) {
         runs = runs.filter(r => !r.isWarmup);
     }
 
+    // Hide debug-assistant runs by default (they are not benchmark results).
+    if (!filters.includeDebug) {
+        runs = runs.filter(r => r.testId !== 'debug-analyze' && !r.isDebugAnalysis);
+    }
+
     if (filters.testId) {
         runs = runs.filter(r => r.testId === filters.testId);
     }

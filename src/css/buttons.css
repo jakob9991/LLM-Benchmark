@@ -1,3 +1,5 @@
+/* Auto-generated from styles.css sections. Source of truth: split CSS files. */
+
 /* ===== Buttons ===== */
 .btn {
     padding: 0.625rem 1.25rem;
@@ -31,66 +33,4 @@
 
 .btn-secondary:hover:not(:disabled) {
     background-color: var(--bg-secondary);
-}
-
-.btn-success {
-    background-color: var(--success-color);
-    color: white;
-}
-
-.btn-success:hover:not(:disabled) {
-    background-color: #059669;
-}
-
-.btn-danger {
-    background-color: var(--error-color);
-    color: white;
-}
-
-.btn-danger:hover:not(:disabled) {
-    background-color: #dc2626;
-}
-
-.btn-warning {
-    background-color: var(--warning-color);
-    color: white;
-}
-
-.btn-warning:hover:not(:disabled) {
-    background-color: #d97706;
-}
-
-.btn-icon {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 0.25rem 0.5rem;
-    transition: var(--transition-fast);
-}
-
-.btn-icon:hover {
-    color: var(--text-primary);
-}
-
-.btn-small {
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
-}
-
-.btn-large {
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-    min-width: 180px;
-}
-
-.btn-limit {
-    background: linear-gradient(135deg, #8b5cf6, #6366f1);
-    border: none;
-    font-weight: 600;
-}
-
-.btn-limit:hover:not(:disabled) {
-    background: linear-gradient(135deg, #7c3aed, #4f46e5);
 }

@@ -21,7 +21,7 @@ const providers = {
  * @param {Function} params.onStream - Streaming Callback (optional)
  * @returns {Promise<{text: string, meta: Object}>}
  */
-async function runModel({ provider, model, prompt, options = {}, onStream = null }) {
+async function runModel({ provider, model, prompt, options = {}, onStream = null, signal = undefined }) {
     const providerInstance = providers[provider];
 
     if (!providerInstance) {
@@ -39,7 +39,8 @@ async function runModel({ provider, model, prompt, options = {}, onStream = null
         model,
         prompt,
         options,
-        onStream
+        onStream,
+        signal
     });
 
     console.log(`  Result: ${result.text.length} chars, ${result.meta.latency_ms}ms`);

@@ -85,7 +85,7 @@ class OpenRouterProvider extends BaseProvider {
         }
     }
 
-    async run({ model, prompt, options = {}, onStream = null }) {
+    async run({ model, prompt, options = {}, onStream = null, signal = undefined }) {
         if (!this.apiKey) {
             throw new Error('OpenRouter API Key nicht konfiguriert');
         }
@@ -120,7 +120,8 @@ class OpenRouterProvider extends BaseProvider {
                     'HTTP-Referer': 'http://localhost:3000',
                     'X-Title': 'LLM Benchmark Tester'
                 },
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify(requestBody),
+                signal
             });
 
             if (!response.ok) {

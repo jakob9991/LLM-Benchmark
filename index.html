@@ -6,7 +6,19 @@
     <title>LLM Benchmark Tester</title>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="src/css/styles.css">
+    <!-- Split CSS (replaces the old monolithic styles.css) -->
+    <link rel="stylesheet" href="src/css/variables.css">
+    <link rel="stylesheet" href="src/css/base.css">
+    <link rel="stylesheet" href="src/css/layout.css">
+    <link rel="stylesheet" href="src/css/buttons.css">
+    <link rel="stylesheet" href="src/css/models.css">
+    <link rel="stylesheet" href="src/css/tests.css">
+    <link rel="stylesheet" href="src/css/options.css">
+    <link rel="stylesheet" href="src/css/runner.css">
+    <link rel="stylesheet" href="src/css/logs.css">
+    <link rel="stylesheet" href="src/css/metrics.css">
+    <link rel="stylesheet" href="src/css/modal.css">
+    <link rel="stylesheet" href="src/css/responsive.css">
 </head>
 <body>
     <div id="app">
@@ -81,10 +93,10 @@
                     <!-- Right Column: Test Execution -->
                     <div class="right-column">
                         <div class="execution-panel">
-                            <h3>Test-Ausfuehrung</h3>
+                            <h3>Test-Ausführung</h3>
 
                             <div class="panel-section">
-                                <label class="panel-label" for="filter-category">Test Kategorie auswaehlen</label>
+                                <label class="panel-label" for="filter-category">Test Kategorie auswählen</label>
                                 <select id="filter-category" class="panel-select">
                                     <option value="">Alle Kategorien</option>
                                 </select>
@@ -100,23 +112,23 @@
                                 <div class="mode-option">
                                     <label class="option-label">
                                         <span>Temperatur:</span>
-                                        <input type="number" id="single-temperature" min="0" max="2" step="0.1" value="0" readonly />
+                                        <input type="number" id="single-temperature" min="0" max="2" step="0.1" value="0" />
                                     </label>
                                 </div>
 
                                 <div id="single-selected-tests" class="selected-tests-list">
                                     <div class="selected-tests-header">Markierte Tests:</div>
-                                    <p class="info-text-empty">Keine Tests ausgewaehlt</p>
+                                    <p class="info-text-empty">Keine Tests ausgewählt</p>
                                 </div>
 
                                 <div id="single-warmup-note" class="warmup-note" style="display: none;">
-                                    Lokales Modell gewaehlt: Bitte zuerst Warm-up ausfuehren.
+                                    Lokales Modell gewählt: Bitte zuerst Warm-up ausführen.
                                 </div>
 
                                 <div class="mode-actions">
                                     <button id="single-warmup-btn" class="btn btn-secondary">Warm-up lokale Modelle</button>
                                     <button id="single-run-btn" class="btn btn-primary" disabled>
-                                        <span id="single-count">0</span> Tests ausfuehren
+                                        <span id="single-count">0</span> Tests ausführen
                                     </button>
                                 </div>
                             </div>
@@ -132,7 +144,7 @@
                                 <div class="mode-option">
                                     <label class="option-label">
                                         <span>Temperatur:</span>
-                                        <input type="number" id="batch-temperature" min="0" max="2" step="0.1" value="0" readonly />
+                                        <input type="number" id="batch-temperature" min="0" max="2" step="0.1" value="0" />
                                     </label>
                                 </div>
 
@@ -143,7 +155,7 @@
                                     </label>
                                     <label class="radio-label">
                                         <input type="radio" name="batch-selection" value="selected" />
-                                        <span>Nur ausgewaehlte Tests</span>
+                                        <span>Nur ausgewählte Tests</span>
                                     </label>
                                 </div>
 
@@ -161,11 +173,11 @@
 
                                 <div id="batch-selected-tests" class="selected-tests-list" style="display: none;">
                                     <div class="selected-tests-header">Markierte Tests:</div>
-                                    <p class="info-text-empty">Keine Tests ausgewaehlt</p>
+                                    <p class="info-text-empty">Keine Tests ausgewählt</p>
                                 </div>
 
                                 <div id="batch-warmup-note" class="warmup-note" style="display: none;">
-                                    Lokales Modell gewaehlt: Bitte zuerst Warm-up ausfuehren.
+                                    Lokales Modell gewählt: Bitte zuerst Warm-up ausführen.
                                 </div>
 
                                 <div class="mode-actions">
@@ -185,24 +197,24 @@
                                 <div class="mode-option">
                                     <label class="option-label">
                                         <span>Temperatur:</span>
-                                        <input type="number" id="limit-temperature" min="0" max="2" step="0.1" value="0" readonly />
+                                        <input type="number" id="limit-temperature" min="0" max="2" step="0.1" value="0" />
                                     </label>
                                 </div>
 
                                 <div class="limit-test-info">
                                     <div class="info-box">
                                         <span class="info-icon">i</span>
-                                        <span>Limit Test wird automatisch ausgewaehlt: <strong id="limit-test-name">-</strong></span>
+                                        <span>Limit Test wird automatisch ausgewählt: <strong id="limit-test-name">-</strong></span>
                                     </div>
                                 </div>
 
                                 <div id="limit-warmup-note" class="warmup-note" style="display: none;">
-                                    Lokales Modell gewaehlt: Bitte zuerst Warm-up ausfuehren.
+                                    Lokales Modell gewählt: Bitte zuerst Warm-up ausführen.
                                 </div>
 
                                 <div class="mode-actions">
                                     <button id="limit-warmup-btn" class="btn btn-secondary">Warm-up lokale Modelle</button>
-                                    <button id="limit-run-btn" class="btn btn-primary">Test ausfuehren</button>
+                                    <button id="limit-run-btn" class="btn btn-primary">Test ausführen</button>
                                 </div>
                             </div>
 
@@ -245,17 +257,27 @@
                 <div class="runner-header">
                     <div class="runner-info">
                         <div id="runner-status" class="runner-status">
-                            <span class="status-badge">läuft</span>
+                            <span class="status-badge idle">Bereit</span>
                         </div>
                         <div class="runner-details">
-                            <div><strong>Test:</strong> <span id="runner-test-name"></span></div>
-                            <div><strong>Modell:</strong> <span id="runner-model-name"></span></div>
-                            <div><strong>Modus:</strong> <span id="runner-mode"></span></div>
+                            <div><strong>Test:</strong> <span id="runner-test-name">-</span></div>
+                            <div><strong>Modell:</strong> <span id="runner-model-name">-</span></div>
+                            <div><strong>Modus:</strong> <span id="runner-mode">-</span></div>
+                            <div><strong>Dauer:</strong> <span id="runner-elapsed">0:00</span></div>
+                            <div><strong>Fortschritt:</strong> <span id="runner-step">-</span></div>
                         </div>
                     </div>
-                    <button id="runner-abort-btn" class="btn btn-danger" style="display: none;">
-                        ⏹ Abbrechen
-                    </button>
+                    <div class="runner-header-actions">
+                        <button id="runner-next-action-btn" class="btn btn-primary" style="display: none;">
+                            Jetzt Tests starten
+                        </button>
+                        <button id="runner-killall-btn" class="btn btn-danger" title="Stoppt alle laufenden Backend-Jobs">
+                            Notaus (Kill)
+                        </button>
+                        <button id="runner-abort-btn" class="btn btn-danger" style="display: none;">
+                            ⏹ Abbrechen
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Progress Bar -->
@@ -269,16 +291,16 @@
                     <!-- Prompt Section -->
                     <div class="runner-section">
                         <h3>Prompt</h3>
-                        <pre id="runner-prompt" class="code-block"></pre>
+                        <pre id="runner-prompt" class="code-block">Kein Test ausgewählt</pre>
                     </div>
 
                     <!-- Output Section -->
                     <div class="runner-section">
                         <h3>
                             Output
-                            <button id="toggle-output-btn" class="btn-icon" title="Minimieren">▼</button>
+                            <button id="toggle-output-btn" class="btn-icon" title="Vollansicht">Vollansicht</button>
                         </h3>
-                        <pre id="runner-output" class="code-block">Warte auf Antwort...</pre>
+                        <pre id="runner-output" class="code-block">Bereit für Test-Ausführung</pre>
                     </div>
 
                     <!-- Runner Metrics -->
@@ -301,12 +323,36 @@
                                 <div id="metric-tokens-out" class="metric-value">-</div>
                             </div>
                         </div>
+                        <div class="runner-metrics-actions">
+                            <button id="preview-html-btn" class="btn btn-secondary" style="display: none;">
+                                👁 HTML Preview
+                            </button>
+                            <button id="debug-analyze-btn" class="btn btn-secondary" style="display: none;">
+                                🔍 Debug Analysis
+                            </button>
+                        </div>
+
+                        <!-- Debug Analysis: show the result directly under the action buttons -->
+                        <div id="debug-analysis-result" class="debug-analysis" style="display: none;">
+                            <div class="debug-analysis-header">
+                                <h3>Debug Analysis</h3>
+                                <span id="debug-analysis-model" class="debug-model-badge"></span>
+                            </div>
+                            <div id="debug-analysis-content" class="code-block"></div>
+                        </div>
+
                     </div>
 
                     <!-- Check Result -->
                     <div id="check-result" class="check-result" style="display: none;">
                         <h3>Validierung</h3>
                         <div id="check-result-content"></div>
+                    </div>
+
+                    <!-- Run Summary (e.g. Single Try) -->
+                    <div id="run-summary" class="run-summary" style="display: none;">
+                        <h3>Durchlauf Zusammenfassung</h3>
+                        <div id="run-summary-content"></div>
                     </div>
 
                     <!-- Manual Evaluation -->
@@ -322,10 +368,12 @@
                             <button id="eval-fail-with-feedback" class="btn btn-warning">✗ Mit Feedback</button>
                         </div>
 
-                        <div id="eval-feedback-section" style="display: none;">
+                        <div id="eval-feedback-section" class="eval-feedback-section" style="display: none;">
                             <label for="eval-comment">Feedback für Retry:</label>
                             <textarea id="eval-comment" rows="4" placeholder="Was war falsch? Was muss verbessert werden?"></textarea>
-                            <button id="eval-submit-fail" class="btn btn-danger">Feedback senden</button>
+                            <div class="eval-feedback-actions">
+                                <button id="eval-submit-fail" class="btn btn-danger">Feedback senden</button>
+                            </div>
                         </div>
                     </div>
 
@@ -350,21 +398,6 @@
                             <pre id="retry-next-prompt"></pre>
                         </div>
                     </div>
-
-                    <!-- Runner Actions -->
-                    <div class="runner-actions">
-                        <button id="preview-html-btn" class="btn btn-secondary" style="display: none;">
-                            👁 HTML Preview
-                        </button>
-                        <button id="debug-analyze-btn" class="btn btn-secondary" style="display: none;">
-                            🔍 Debug Analysis
-                        </button>
-                    </div>
-
-                    <!-- Debug Analysis -->
-                    <div id="debug-analysis-result" class="debug-analysis" style="display: none;">
-                        <h3>Debug Analysis (<span id="debug-analysis-model"></span>)</h3>
-                        <div id="debug-analysis-content"></div>
                     </div>
                 </div>
             </div>
@@ -399,6 +432,10 @@
                         <option value="true">Bestanden</option>
                         <option value="false">Fehlgeschlagen</option>
                     </select>
+                    <label class="checkbox-inline" title="Debug-Assistent Runs anzeigen">
+                        <input type="checkbox" id="filter-run-debug" />
+                        <span>Debug-Runs</span>
+                    </label>
                 </div>
 
                 <div id="runs-container" class="logs-container"></div>
@@ -508,8 +545,6 @@
     </div>
 
     <!-- Scripts -->
-    <script src="src/js/config.js"></script>
-    <script src="src/js/ui.js"></script>
-    <script src="src/js/app.js"></script>
+    <script type="module" src="src/js/app.js"></script>
 </body>
 </html>
