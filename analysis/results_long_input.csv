@@ -1,0 +1,4 @@
+Modell;Provider;Typ;Total;Passed;Failed;Erfolgsrate;Latenz_Mean;Latenz_Median;Latenz_StdDev;Kosten
+GPT-4o Mini (Cloud);openrouter;Cloud;40;30;10;75.0;7861;6908;2434;0.0000
+Qwen 2.5 Coder 7B (Lokal);ollama;Lokal;30;0;30;0.0;10346;5362;9340;0.0000
+CodeLlama 7B Instruct (Lokal);ollama;Lokal;40;0;40;0.0;19735;19161;8590;0.0000

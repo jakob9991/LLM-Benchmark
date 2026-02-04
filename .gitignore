@@ -10,11 +10,6 @@ package-lock.json
 .env.local
 .env.*.local
 
-# Data & Analysis
-data/
-analysis/
-*.csv
-*.json.backup
 
 # Logs
 logs/

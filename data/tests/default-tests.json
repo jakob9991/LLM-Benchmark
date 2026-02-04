@@ -1,0 +1,307 @@
+[
+    {
+        "id": "test-001",
+        "name": "Python Syntax Error",
+        "description": "Finde den Syntaxfehler in diesem Python Code",
+        "category": "standard",
+        "difficulty": "easy",
+        "evaluationType": "auto",
+        "promptTemplate": "Finde den Fehler in diesem Code und gib NUR den korrigierten Code zurück, ohne Erklärungen:\n\n```python\n{{INPUT}}\n```",
+        "input": "def calculate_sum(numbers)\n    total = 0\n    for num in numbers:\n        total += num\n    return total\n\nresult = calculate_sum([1, 2, 3, 4, 5])\nprint(f\"Die Summe ist: {result}\")",
+        "checkCommand": "python {{OUTPUT_FILE}}",
+        "expected": {
+            "type": "exitcode",
+            "value": 0
+        },
+        "outputFormat": "code-only",
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-002",
+        "name": "JavaScript Logic Error (isPrime)",
+        "description": "Finde den Logikfehler in dieser JavaScript Funktion",
+        "category": "standard",
+        "difficulty": "easy",
+        "evaluationType": "auto",
+        "promptTemplate": "Dieser Code hat einen Logikfehler. Gib NUR den korrigierten Code zurück:\n\n```javascript\n{{INPUT}}\n```",
+        "input": "function isPrime(n) {\n    if (n <= 1) return false;\n    for (let i = 2; i < n; i++) {\n        if (n % i === 0) {\n            return true;\n        }\n    }\n    return false;\n}\n\nconsole.log(isPrime(7));\nconsole.log(isPrime(4));",
+        "checkCommand": "node {{OUTPUT_FILE}}",
+        "expected": {
+            "type": "output",
+            "pattern": "true\\s*false"
+        },
+        "outputFormat": "code-only",
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-003",
+        "name": "JavaScript Off-by-One Error",
+        "description": "Finde den Off-by-One Fehler im Array-Zugriff",
+        "category": "standard",
+        "difficulty": "easy",
+        "evaluationType": "auto",
+        "promptTemplate": "Dieser JavaScript-Code wirft einen Fehler. Gib NUR den korrigierten Code zurück:\n\n```javascript\n{{INPUT}}\n```",
+        "input": "function getLastElement(arr) {\n    return arr[arr.length];\n}\n\nconst numbers = [10, 20, 30, 40, 50];\nconst last = getLastElement(numbers);\nconsole.log('Letztes Element:', last);",
+        "checkCommand": "node {{OUTPUT_FILE}}",
+        "expected": {
+            "type": "output",
+            "pattern": "Letztes Element:\\s*50"
+        },
+        "outputFormat": "code-only",
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-004",
+        "name": "SQL Injection Fix (Python)",
+        "description": "Erkenne und behebe die SQL Injection Schwachstelle",
+        "category": "standard",
+        "difficulty": "medium",
+        "evaluationType": "auto",
+        "promptTemplate": "Dieser Code ist anfällig für SQL Injection. Gib NUR den sicheren, korrigierten Code zurück. Verwende parameterisierte Queries mit Platzhaltern (?):\n\n```python\n{{INPUT}}\n```",
+        "input": "import sqlite3\n\ndef get_user(username):\n    conn = sqlite3.connect('users.db')\n    cursor = conn.cursor()\n    query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    cursor.execute(query)\n    return cursor.fetchone()\n\nuser_input = input(\"Benutzername: \")\nuser = get_user(user_input)",
+        "checkCommand": null,
+        "expected": [
+            {
+                "type": "regex",
+                "pattern": "execute\\s*\\([^)]*,\\s*[\\[\\(]"
+            },
+            {
+                "type": "not_regex",
+                "pattern": "f['\"]SELECT|f\"SELECT|'{username}'|\"{username}\""
+            }
+        ],
+        "outputFormat": "code-only",
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-005",
+        "name": "Input Validation (Email)",
+        "description": "Implementiere eine Email-Validierungsfunktion",
+        "category": "standard",
+        "difficulty": "easy",
+        "evaluationType": "auto",
+        "promptTemplate": "{{INPUT}}\n\nGib NUR den Code zurück, keine Erklärungen.",
+        "input": "Schreibe eine JavaScript-Funktion namens 'validateEmail', die prüft ob eine E-Mail-Adresse gültig ist. Die Funktion soll true für gültige und false für ungültige Adressen zurückgeben. Teste mit:\n- 'test@example.com' (gültig)\n- 'invalid-email' (ungültig)\n- 'user@domain' (ungültig)\n\nGib die drei Ergebnisse mit console.log aus.",
+        "checkCommand": "node {{OUTPUT_FILE}}",
+        "expected": {
+            "type": "output",
+            "pattern": "true\\s*false\\s*false"
+        },
+        "outputFormat": "code-only",
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-006",
+        "name": "Promise Error Handling",
+        "description": "Finde den Fehler im Promise/async Code",
+        "category": "standard",
+        "difficulty": "medium",
+        "evaluationType": "auto",
+        "promptTemplate": "Dieser async/await Code hat einen Fehler. Das await fehlt bei response.json(). Gib NUR den korrigierten Code zurück:\n\n```javascript\n{{INPUT}}\n```",
+        "input": "function simulateFetch() {\n    return new Promise((resolve) => {\n        setTimeout(() => {\n            resolve({\n                json: () => Promise.resolve({ name: 'Max', age: 25 })\n            });\n        }, 100);\n    });\n}\n\nasync function getUserData() {\n    const response = await simulateFetch();\n    const data = response.json();\n    return data;\n}\n\nasync function main() {\n    const user = await getUserData();\n    console.log(user.name, user.age);\n}\n\nmain();",
+        "checkCommand": "node {{OUTPUT_FILE}}",
+        "expected": {
+            "type": "output",
+            "pattern": "Max\\s*25"
+        },
+        "outputFormat": "code-only",
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-007",
+        "name": "Array Methods (Filter & Map)",
+        "description": "Implementiere Datenfilterung mit Array-Methoden",
+        "category": "standard",
+        "difficulty": "easy",
+        "evaluationType": "auto",
+        "promptTemplate": "{{INPUT}}\n\nGib NUR den Code zurück, keine Erklärungen.",
+        "input": "Gegeben ist ein Array von Benutzern:\nconst users = [\n  { name: 'Anna', age: 25, active: true },\n  { name: 'Bob', age: 17, active: true },\n  { name: 'Charlie', age: 30, active: false },\n  { name: 'Diana', age: 22, active: true }\n];\n\nSchreibe JavaScript-Code der:\n1. Nur aktive Benutzer filtert die älter als 18 sind\n2. Von diesen nur die Namen extrahiert\n3. Das Ergebnis als Array mit console.log ausgibt\n\nErwartetes Ergebnis: ['Anna', 'Diana']",
+        "checkCommand": "node {{OUTPUT_FILE}}",
+        "expected": {
+            "type": "output",
+            "pattern": "\\[\\s*['\"]Anna['\"]\\s*,\\s*['\"]Diana['\"]\\s*\\]"
+        },
+        "outputFormat": "code-only",
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-008",
+        "name": "XSS Prevention",
+        "description": "Implementiere XSS-sichere Ausgabe",
+        "category": "standard",
+        "difficulty": "medium",
+        "evaluationType": "auto",
+        "promptTemplate": "{{INPUT}}\n\nGib NUR den Code zurück, keine Erklärungen.",
+        "input": "Schreibe eine JavaScript-Funktion namens 'escapeHtml', die HTML-Sonderzeichen escaped um XSS-Angriffe zu verhindern. Die Funktion soll <, >, &, \" und ' escapen.\n\nTeste mit:\nescapeHtml('<script>alert(\"XSS\")</script>')\n\nErwartete Ausgabe sollte die escaped Version sein (mit &lt; &gt; etc.).\nGib das Ergebnis mit console.log aus.",
+        "checkCommand": "node {{OUTPUT_FILE}}",
+        "expected": {
+            "type": "output",
+            "pattern": "&lt;script&gt;"
+        },
+        "outputFormat": "code-only",
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-009",
+        "name": "JSON Parse Error Handling",
+        "description": "Implementiere robustes JSON-Parsing",
+        "category": "standard",
+        "difficulty": "medium",
+        "evaluationType": "auto",
+        "promptTemplate": "{{INPUT}}\n\nGib NUR den Code zurück, keine Erklärungen.",
+        "input": "Schreibe eine JavaScript-Funktion namens 'safeJsonParse', die JSON sicher parst. Bei ungültigem JSON soll sie null zurückgeben statt zu crashen.\n\nTeste mit:\n1. safeJsonParse('{\"name\": \"Max\"}') - soll das Objekt zurückgeben\n2. safeJsonParse('invalid json') - soll null zurückgeben\n3. safeJsonParse('') - soll null zurückgeben\n\nGib für jeden Test aus ob das Ergebnis korrekt ist (true/false) mit console.log.",
+        "checkCommand": "node {{OUTPUT_FILE}}",
+        "expected": {
+            "type": "output",
+            "pattern": "true\\s*true\\s*true"
+        },
+        "outputFormat": "code-only",
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-010",
+        "name": "Memoize Implementierung",
+        "description": "Implementiere eine Memoization-Funktion für Caching",
+        "category": "standard",
+        "difficulty": "medium",
+        "evaluationType": "auto",
+        "promptTemplate": "{{INPUT}}\n\nGib NUR den Code zurück, keine Erklärungen.",
+        "input": "Implementiere eine JavaScript memoize-Funktion. Die Funktion soll:\n1. Eine Funktion als Parameter nehmen\n2. Eine neue Funktion zurückgeben, die Ergebnisse cached\n3. Bei gleichem Input das gecachte Ergebnis zurückgeben\n\nTeste so:\nlet callCount = 0;\nfunction expensiveCalc(n) {\n    callCount++;\n    return n * 2;\n}\n\nconst memoizedCalc = memoize(expensiveCalc);\n\nconsole.log(memoizedCalc(5));  // 10, callCount = 1\nconsole.log(memoizedCalc(5));  // 10, callCount = 1 (cached!)\nconsole.log(memoizedCalc(10)); // 20, callCount = 2\nconsole.log(memoizedCalc(5));  // 10, callCount = 2 (cached!)\nconsole.log('Calls:', callCount); // Muss 2 sein\n\nErwartet: Die Funktion wird nur 2x aufgerufen (für 5 und 10), nicht 4x.",
+        "checkCommand": "node {{OUTPUT_FILE}}",
+        "expected": {
+            "type": "output",
+            "pattern": "10[\\s\\S]*10[\\s\\S]*20[\\s\\S]*10[\\s\\S]*Calls:\\s*2"
+        },
+        "outputFormat": "code-only",
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-011",
+        "name": "Code Refactoring",
+        "description": "Refaktoriere unlesbaren Code",
+        "category": "standard",
+        "difficulty": "medium",
+        "evaluationType": "manual",
+        "promptTemplate": "Refaktoriere diesen Code für bessere Lesbarkeit und Wartbarkeit. Behalte die Funktionalität bei. Gib NUR den refaktorierten Code zurück:\n\n```javascript\n{{INPUT}}\n```",
+        "input": "function p(d){let r=[];for(let i=0;i<d.length;i++){if(d[i].a>18&&d[i].s==='active'){r.push({n:d[i].n,e:d[i].e})}}return r}",
+        "checkCommand": null,
+        "expected": null,
+        "outputFormat": "code-only",
+        "manualCriteria": [
+            "Aussagekräftige Variablennamen",
+            "Korrekte Funktionalität erhalten",
+            "Moderne JS-Syntax (filter, map, etc.)",
+            "Gut lesbare Struktur"
+        ],
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-012",
+        "name": "API Error Handling erklären",
+        "description": "Erkläre das Error Handling Pattern",
+        "category": "standard",
+        "difficulty": "medium",
+        "evaluationType": "manual",
+        "promptTemplate": "Erkläre was dieser Code macht und warum dieses Pattern für API-Aufrufe wichtig ist:\n\n```javascript\n{{INPUT}}\n```",
+        "input": "async function fetchWithRetry(url, options = {}, maxRetries = 3) {\n    let lastError;\n    for (let attempt = 1; attempt <= maxRetries; attempt++) {\n        try {\n            const response = await fetch(url, options);\n            if (!response.ok) {\n                throw new Error(`HTTP ${response.status}`);\n            }\n            return await response.json();\n        } catch (error) {\n            lastError = error;\n            if (attempt < maxRetries) {\n                await new Promise(r => setTimeout(r, 1000 * attempt));\n            }\n        }\n    }\n    throw lastError;\n}",
+        "checkCommand": null,
+        "expected": null,
+        "outputFormat": "text",
+        "manualCriteria": [
+            "Erklärt den Retry-Mechanismus",
+            "Erklärt exponentielles Backoff (1s, 2s, 3s)",
+            "Erklärt Error Handling (try/catch)",
+            "Nennt Anwendungsfälle (instabile APIs, Netzwerkfehler)"
+        ],
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-013",
+        "name": "Limit Testing: Focus Board SPA",
+        "description": "Baue eine anspruchsvolle Single-Page-App mit State, Storage und UX",
+        "category": "limit-testing",
+        "difficulty": "hard",
+        "evaluationType": "manual",
+        "promptTemplate": "You are in a benchmark test. Return ONLY code. No explanations, no markdown.\n\n{{INPUT}}",
+        "input": "Build a single-file HTML app (HTML + CSS + JS in one file) for a \"Focus Board\".\n\nRequirements:\n1) Layout: left column = task list, right column = focus timer.\n2) Task list: add task, complete task, delete task. Show counts (total, done).\n3) Timer: 25/5 pomodoro with start, pause, reset, and auto-switch between focus/break.\n4) State: persist tasks and timer state in localStorage.\n5) UX: keyboard shortcuts: Enter adds task, Space toggles timer, Delete removes selected task.\n6) Accessibility: visible focus states, labels for inputs, buttons have aria-labels.\n7) No external libraries.\n\nOutput: return a valid HTML file only.",
+        "checkCommand": null,
+        "expected": null,
+        "outputFormat": "code-only",
+        "manualCriteria": [
+            "Single HTML file with embedded CSS and JS",
+            "Task CRUD works and counts update correctly",
+            "Pomodoro timer works with auto-switch and persistence",
+            "Keyboard shortcuts and focus states are usable",
+            "No external libraries; code is readable"
+        ],
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-014",
+        "name": "Long Input Debugging JS: getLastElement",
+        "description": "Finde einen Off-by-one Fehler in langem JavaScript-Code",
+        "category": "long-input",
+        "difficulty": "hard",
+        "evaluationType": "auto",
+        "promptTemplate": "This JavaScript code has a bug. Return the FULL corrected code, including all helper functions and the demo/test code. Output ONLY code, no explanations or markdown.\n\n```javascript\n{{INPUT}}\n```",
+        "input": "// Utility helpers\nfunction clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }\nfunction padLeft(value, length) {\n    let s = String(value);\n    while (s.length < length) s = '0' + s;\n    return s;\n}\nfunction sum(arr) { return arr.reduce((a, b) => a + b, 0); }\nfunction average(arr) { return arr.length ? sum(arr) / arr.length : 0; }\nfunction range(n) { return Array.from({ length: n }, (_, i) => i); }\nfunction formatList(arr) { return '[' + arr.join(', ') + ']'; }\nfunction logHeader(title) { console.log('--- ' + title + ' ---'); }\n\n// Data processing helpers\nfunction toUpperCaseAll(arr) { return arr.map(v => String(v).toUpperCase()); }\nfunction filterPositive(arr) { return arr.filter(v => v > 0); }\nfunction findMax(arr) { return arr.reduce((a, b) => (a > b ? a : b), -Infinity); }\nfunction findMin(arr) { return arr.reduce((a, b) => (a < b ? a : b), Infinity); }\nfunction joinLines(arr) { return arr.join('\n'); }\nfunction repeatValue(value, count) { return Array.from({ length: count }, () => value); }\nfunction mapIndex(arr) { return arr.map((v, i) => i + ':' + v); }\n\n// This is the function under test\nfunction getLastElement(arr) {\n    // BUG: off-by-one access\n    return arr[arr.length];\n}\n\n// Demo program (keep output stable)\nconst numbers = [10, 20, 30, 40, 50];\nlogHeader('Numbers');\nconsole.log(formatList(numbers));\nconst last = getLastElement(numbers);\nconsole.log('Last element:', last);\n\n// Noise to increase input length\nconst letters = ['a', 'b', 'c'];\nconsole.log('Upper:', formatList(toUpperCaseAll(letters)));\nconsole.log('Range:', formatList(range(5)));\nconsole.log('Average:', average(numbers));\nconsole.log('Min:', findMin(numbers));\nconsole.log('Max:', findMax(numbers));\nconsole.log('Pad:', padLeft(7, 3));\nconsole.log('Map:', formatList(mapIndex(numbers)));\nconsole.log('Repeat:', formatList(repeatValue('x', 5)));\nconsole.log('Filtered:', formatList(filterPositive([-2, -1, 0, 3, 4])));\n",
+        "checkCommand": "node {{OUTPUT_FILE}}",
+        "expected": {
+            "type": "output",
+            "pattern": "Last element:\\s*50"
+        },
+        "outputFormat": "code-only",
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-015",
+        "name": "Long Input JSON Parse: safeJsonParse",
+        "description": "Implementiere robustes JSON-Parsing in langem Kontext",
+        "category": "long-input",
+        "difficulty": "hard",
+        "evaluationType": "auto",
+        "promptTemplate": "Return the FULL code, including the helper utilities and the test section. Output ONLY code, no explanations or markdown.\n\n{{INPUT}}",
+        "input": "// Helper utilities\nfunction isEmpty(value) { return value === null || value === undefined || value === ''; }\nfunction trimInput(value) { return typeof value === 'string' ? value.trim() : value; }\nfunction normalize(value) { return typeof value === 'string' ? value.replace(/\\s+/g, ' ').trim() : value; }\nfunction isProbablyJson(value) {\n    if (typeof value !== 'string') return false;\n    const s = value.trim();\n    return (s.startsWith('{') && s.endsWith('}')) || (s.startsWith('[') && s.endsWith(']'));\n}\nfunction safeStringify(obj) { try { return JSON.stringify(obj); } catch { return 'null'; } }\nfunction logCheck(name, result) { console.log(name + ':', result ? 'OK' : 'FAIL'); }\n\n// TODO: implement this function\nfunction safeJsonParse(input) {\n    // implement\n}\n\n// Tests\nconst t1 = safeJsonParse('{\"name\": \"Max\"}');\nconst t2 = safeJsonParse('invalid json');\nconst t3 = safeJsonParse('');\nconst t4 = safeJsonParse('   {\"ok\": true}   ');\nconsole.log(t1 && t1.name === 'Max');\nconsole.log(t2 === null);\nconsole.log(t3 === null);\nconsole.log(t4 && t4.ok === true);\n",
+        "checkCommand": "node {{OUTPUT_FILE}}",
+        "expected": {
+            "type": "output",
+            "pattern": "true\\s*true\\s*true\\s*true"
+        },
+        "outputFormat": "code-only",
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-016",
+        "name": "Long Input Security: escapeHtml + Tests",
+        "description": "Implementiere escapeHtml inkl. Mini-Test-Runner",
+        "category": "long-input",
+        "difficulty": "hard",
+        "evaluationType": "auto",
+        "promptTemplate": "Return the FULL code, including the test runner and tests. Output ONLY code, no explanations or markdown.\n\n{{INPUT}}",
+        "input": "function assertEqual(actual, expected, label) {\n    const ok = Array.isArray(expected) ? expected.includes(actual) : actual === expected;\n    if (!ok) {\n        console.log('FAIL:', label);\n        console.log('Expected:', expected);\n        console.log('Actual:', actual);\n        return false;\n    }\n    console.log('PASS:', label);\n    return true;\n}\n\n// TODO: implement escapeHtml\nfunction escapeHtml(input) {\n    // implement\n}\n\nlet passed = 0;\nlet total = 0;\nfunction test(label, actual, expected) {\n    total++;\n    if (assertEqual(actual, expected, label)) passed++;\n}\n\nconst sample = '<script>alert(\"XSS\")</script>';\nconst sample2 = 'Tom & Jerry > Spike < Dog';\nconst sample3 = \"Quote: 'Hello' and \\\"World\\\"\";\n\n// Tests\ntest('script tag', escapeHtml(sample), [\n    '&lt;script&gt;alert(\"XSS\")&lt;/script&gt;',\n    '&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;'\n]);\ntest('ampersand and angles', escapeHtml(sample2), 'Tom &amp; Jerry &gt; Spike &lt; Dog');\ntest('quotes', escapeHtml(sample3), [\n    'Quote: &#39;Hello&#39; and &quot;World&quot;',\n    'Quote: &#x27;Hello&#x27; and &quot;World&quot;',\n    'Quote: &apos;Hello&apos; and &quot;World&quot;'\n]);\n\nif (passed === total) {\n    console.log('ALL TESTS PASSED');\n} else {\n    console.log('FAILED:', passed + '/' + total);\n}\n",
+        "checkCommand": "node {{OUTPUT_FILE}}",
+        "expected": {
+            "type": "output",
+            "pattern": "ALL TESTS PASSED"
+        },
+        "outputFormat": "code-only",
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "test-017",
+        "name": "Long Input Multi-Step: slugify + Tests",
+        "description": "Implementiere slugify und Tests in langem Kontext",
+        "category": "long-input",
+        "difficulty": "hard",
+        "evaluationType": "auto",
+        "promptTemplate": "Return the FULL code, including the test runner and tests. Output ONLY code, no explanations or markdown.\n\n{{INPUT}}",
+        "input": "// Helpers\nfunction normalizeWhitespace(text) { return text.replace(/\\s+/g, ' ').trim(); }\nfunction removePunctuation(text) { return text.replace(/[^a-zA-Z0-9\\s-]/g, ''); }\nfunction toLower(text) { return text.toLowerCase(); }\nfunction collapseDashes(text) { return text.replace(/-+/g, '-'); }\nfunction trimDashes(text) { return text.replace(/^-+|-+$/g, ''); }\nfunction log(name, value) { console.log(name + ':', value); }\n\n// TODO: implement slugify\nfunction slugify(text) {\n    // implement\n}\n\nfunction assertEqual(actual, expected) {\n    const expectedList = Array.isArray(expected) ? expected : [expected];\n    return expectedList.includes(actual);\n}\nfunction runTest(input, expected) {\n    const actual = slugify(input);\n    if (!assertEqual(actual, expected)) {\n        console.log('FAIL', input, '=>', actual);\n        return false;\n    }\n    return true;\n}\n\nconst tests = [\n    ['Hello World', 'hello-world'],\n    ['  Multiple   spaces  here ', 'multiple-spaces-here'],\n    ['Clean_this-up!', ['cleanthis-up', 'clean_this-up', 'clean-this-up']],\n    ['Already--Slugified', ['already-slugified', 'already--slugified']]\n];\n\nlet ok = 0;\nfor (const [input, expected] of tests) {\n    if (runTest(input, expected)) ok++;\n}\n\nif (ok === tests.length) {\n    console.log('ALL TESTS PASSED');\n} else {\n    console.log('FAILED:', ok + '/' + tests.length);\n}\n",
+        "checkCommand": "node {{OUTPUT_FILE}}",
+        "expected": {
+            "type": "output",
+            "pattern": "ALL TESTS PASSED"
+        },
+        "outputFormat": "code-only",
+        "createdAt": "2024-01-01T00:00:00.000Z"
+    }]
+
