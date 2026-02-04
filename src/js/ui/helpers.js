@@ -90,10 +90,25 @@ export const helpers = {
     extractHtmlFromOutput(text) {
         if (!text) return '';
         const trimmed = text.trim();
-        const fenceMatch = text.match(/```(?:html)?\s*([\s\S]*?)```/i);
-        if (fenceMatch) {
-            return fenceMatch[1].trim();
+
+        // Find ALL code blocks and pick the one that contains a complete HTML document
+        const fenceRegex = /```(?:html)?\s*([\s\S]*?)```/gi;
+        const blocks = [];
+        let match;
+        while ((match = fenceRegex.exec(text)) !== null) {
+            blocks.push(match[1].trim());
         }
+
+        if (blocks.length > 0) {
+            // Prefer the block that contains a full HTML document (<!DOCTYPE or <html)
+            const htmlBlock = blocks.find(b => this.isHtmlDocument(b));
+            if (htmlBlock) {
+                return htmlBlock;
+            }
+            // Otherwise return the longest block (most likely to be complete)
+            return blocks.reduce((a, b) => a.length >= b.length ? a : b);
+        }
+
         if (trimmed.startsWith('```') && this.isHtmlDocument(text)) {
             const withoutFence = trimmed.replace(/^```(?:html)?/i, '').replace(/```$/, '');
             return withoutFence.trim();
@@ -113,9 +128,11 @@ export const helpers = {
 
         // NOTE: Do NOT use "noopener" here. Some browsers return null for window.open when noopener is used,
         // which makes document.write impossible and results in a blank tab.
+        // Use unique window name to open a NEW tab each time
+        const windowName = `preview_${Date.now()}`;
         let preview = null;
         try {
-            preview = window.open('', '_blank');
+            preview = window.open('', windowName);
         } catch {
             preview = null;
         }
@@ -143,7 +160,12 @@ export const helpers = {
 
         try {
             preview.document.open();
-            preview.document.write(content);
+            // Add cache-busting meta tag to prevent browser caching
+            const contentWithNoCaching = content.replace(
+                /<head>/i,
+                '<head><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">'
+            );
+            preview.document.write(contentWithNoCaching);
             preview.document.close();
             preview.focus?.();
         } catch (error) {
@@ -157,5 +179,19 @@ export const helpers = {
                 this.showError('Konnte HTML Preview nicht oeffnen: ' + (error?.message || String(error)));
             }
         }
+    },
+
+    /**
+     * Simple hash function for debugging
+     */
+    hashString(str) {
+        if (!str) return 0;
+        let hash = 0;
+        for (let i = 0; i < Math.min(str.length, 5000); i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
+        }
+        return hash;
     }
 };

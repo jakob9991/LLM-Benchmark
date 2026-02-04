@@ -12,6 +12,7 @@ export const navigation = {
     },
 
     switchView(viewName) {
+        console.log('[Navigation] Switching to view:', viewName);
         document.querySelectorAll('.nav-tab').forEach(tab => {
             tab.classList.toggle('active', tab.dataset.view === viewName);
         });
@@ -20,8 +21,14 @@ export const navigation = {
         });
 
         // View-spezifische Aktionen
-        if (viewName === 'runs') this.loadRuns();
-        if (viewName === 'metrics') this.loadStats();
+        if (viewName === 'runs') {
+            console.log('[Navigation] Loading runs...');
+            this.loadRuns();
+        }
+        if (viewName === 'metrics') {
+            console.log('[Navigation] Loading stats...');
+            this.loadStats();
+        }
     }
 };
 

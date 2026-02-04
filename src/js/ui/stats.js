@@ -5,8 +5,11 @@ export const stats = {
      * Stats laden
      */
     async loadStats() {
+        console.log('[Stats] loadStats called');
         try {
+            console.log('[Stats] Calling API.getStats...');
             const stats = await API.getStats();
+            console.log('[Stats] Received stats:', stats);
 
             document.getElementById('stat-total').textContent = stats.total;
             document.getElementById('stat-passed').textContent = stats.passed;
@@ -26,6 +29,12 @@ export const stats = {
 
         } catch (error) {
             console.error('Error loading stats:', error);
+            // Zeige Fehlermeldung in den Stats
+            document.getElementById('stat-total').textContent = '-';
+            document.getElementById('stat-passed').textContent = '-';
+            document.getElementById('stat-failed').textContent = '-';
+            document.getElementById('stat-success-rate').textContent = '-';
+            this.showError('Stats konnten nicht geladen werden: ' + error.message);
         }
     },
 

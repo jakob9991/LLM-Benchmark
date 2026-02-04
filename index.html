@@ -95,13 +95,6 @@
                         <div class="execution-panel">
                             <h3>Test-Ausführung</h3>
 
-                            <div class="panel-section">
-                                <label class="panel-label" for="filter-category">Test Kategorie auswählen</label>
-                                <select id="filter-category" class="panel-select">
-                                    <option value="">Alle Kategorien</option>
-                                </select>
-                            </div>
-
                             <div class="mode-tabs" role="tablist">
                                 <button class="mode-tab active" data-mode="single">Single Try</button>
                                 <button class="mode-tab" data-mode="batch">Batch Testing</button>
@@ -221,6 +214,13 @@
                             <div class="mode-info-text">
                                 Warm-up Runs werden markiert und nicht in Stats/Export gezaehlt.
                             </div>
+                        </div>
+
+                        <div class="test-filter-section">
+                            <label class="panel-label" for="filter-category">Test Kategorie filtern</label>
+                            <select id="filter-category" class="panel-select">
+                                <option value="">Alle Kategorien</option>
+                            </select>
                         </div>
 
                         <div class="test-list-container">

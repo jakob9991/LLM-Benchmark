@@ -34,11 +34,20 @@ export const actions = {
         document.getElementById('runner-next-action-btn')?.addEventListener('click', () => this.runPostWarmupAction());
         document.getElementById('runner-killall-btn')?.addEventListener('click', () => this.killAllRunnerJobs());
         document.getElementById('preview-html-btn')?.addEventListener('click', () => {
+            // DEBUG: Log what we're about to preview
+            console.log('[Preview] Button clicked');
+            console.log('[Preview] currentRun exists:', !!this.state.currentRun);
+            console.log('[Preview] output length:', this.state.currentRun?.output?.length || 0);
+            console.log('[Preview] output hash:', this.hashString(this.state.currentRun?.output || ''));
+
             if (!this.state.currentRun?.output) {
                 this.showError('Kein Output zum Anzeigen vorhanden.');
                 return;
             }
             const html = this.extractHtmlFromOutput(this.state.currentRun.output);
+            console.log('[Preview] extracted html length:', html?.length || 0);
+            console.log('[Preview] extracted html hash:', this.hashString(html || ''));
+
             if (!html) {
                 this.showError('Kein gueltiges HTML im Output gefunden.');
                 return;

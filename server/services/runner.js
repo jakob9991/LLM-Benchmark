@@ -94,6 +94,18 @@ async function runSingle({ test, provider, model, options = {}, meta = {}, onStr
             e.name = 'AbortError';
             throw e;
         }
+
+        // DEBUG: Log retry context from frontend
+        if (meta?.retryAttempt > 1) {
+            console.log(`[Runner] Retry attempt ${meta.retryAttempt}`);
+            console.log('[Runner] retryContext received:', !!meta.retryContext);
+            console.log('[Runner] retryContext length:', meta.retryContext?.length || 0);
+            if (meta.retryContext) {
+                // Show first 500 chars to verify feedback is included
+                console.log('[Runner] retryContext preview:', meta.retryContext.substring(0, 500));
+            }
+        }
+
         // Baue Prompt
         const testForRun = meta?.retryContext
             ? { ...test, promptTemplate: meta.retryContext + test.promptTemplate }

@@ -214,9 +214,8 @@ List all issues found:`;
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
-    } finally {
-        if (job) finishJob(job.jobId);
     }
+    // Kein job tracking für debug-analyze endpoint
 });
 
 // POST /api/runner/compare - Test mit mehreren Modellen vergleichen

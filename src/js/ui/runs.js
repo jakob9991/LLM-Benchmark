@@ -5,6 +5,9 @@ export const runs = {
      * Runs laden
      */
     async loadRuns() {
+        console.log('[Runs] loadRuns called');
+        const container = document.getElementById('runs-container');
+        console.log('[Runs] container:', container);
         try {
             const filters = {
                 provider: document.getElementById('filter-run-provider')?.value,
@@ -16,10 +19,17 @@ export const runs = {
             // Entferne leere Filter
             Object.keys(filters).forEach(k => !filters[k] && delete filters[k]);
 
+            console.log('[Runs] Calling API.getRuns with filters:', filters);
             const data = await API.getRuns(filters);
+            console.log('[Runs] Received data:', data);
             this.renderRuns(data.runs);
+            console.log('[Runs] Rendering complete');
         } catch (error) {
             console.error('Error loading runs:', error);
+            if (container) {
+                container.innerHTML = '<p class="error-message">Fehler beim Laden der Runs: ' + this.escapeHtml(error.message) + '</p>';
+            }
+            this.showError('Runs konnten nicht geladen werden: ' + error.message);
         }
     },
 

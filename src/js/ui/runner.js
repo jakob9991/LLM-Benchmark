@@ -1052,7 +1052,19 @@ export const runner = {
     async submitEvaluation(passed) {
         if (!this.state.currentRun) return;
 
-        const comment = document.getElementById('eval-comment')?.value || '';
+        const commentEl = document.getElementById('eval-comment');
+        const comment = commentEl?.value?.trim() || '';
+
+        // DEBUG: Log evaluation submission
+        console.log('[Eval] submitEvaluation called');
+        console.log('[Eval] passed:', passed);
+        console.log('[Eval] comment element found:', !!commentEl);
+        console.log('[Eval] comment value:', JSON.stringify(comment));
+
+        // Warn if feedback is empty on failure (feedback helps the model improve)
+        if (!passed && !comment && this.state.manualRetry) {
+            this.showToast?.('info', 'Tipp: Feedback hilft dem Modell, den Fehler zu korrigieren.', { timeoutMs: 4000 });
+        }
 
         try {
             await API.evaluateRun(this.state.currentRun.id, passed, comment);
@@ -1140,21 +1152,20 @@ export const runner = {
     buildManualRetryContext(history) {
         let text = '\n\n--- BENCHMARK CONTEXT ---\n';
         text += 'You are in a benchmark test. Keep the output format exactly as instructed.\n';
-        text += 'Use the previous attempts and evaluator feedback to fix the solution.\n';
+        text += 'Use the previous attempt and evaluator feedback to fix the solution.\n';
         text += 'Return ONLY the new solution, no extra commentary.\n';
         text += '--- END CONTEXT ---\n';
 
         if (history.length > 0) {
-            text += '\n--- PREVIOUS ATTEMPTS ---\n';
-            history.forEach((entry) => {
-                text += `Attempt ${entry.attempt}:\n`;
-                text += entry.output ? `Output:\n${entry.output}\n` : 'Output: <empty>\n';
-                if (entry.comment) {
-                    text += `Evaluator feedback:\n${entry.comment}\n`;
-                }
-                text += '\n';
-            });
-            text += '--- END PREVIOUS ATTEMPTS ---\n\n';
+            // Only include the LAST attempt to keep context small
+            const lastEntry = history[history.length - 1];
+            text += '\n--- PREVIOUS ATTEMPT ---\n';
+            text += `Attempt ${lastEntry.attempt}:\n`;
+            text += lastEntry.output ? `Output:\n${lastEntry.output}\n` : 'Output: <empty>\n';
+            if (lastEntry.comment) {
+                text += `\nEvaluator feedback:\n${lastEntry.comment}\n`;
+            }
+            text += '--- END PREVIOUS ATTEMPT ---\n\n';
         }
 
         text += 'Please fix the solution and try again.\n\n';
@@ -1191,6 +1202,9 @@ export const runner = {
         this.setRunnerStatus('running', `Retry Versuch ${attempt}/${retry.maxAttempts}`);
         document.getElementById('runner-mode').textContent = `retry (${attempt}/${retry.maxAttempts})`;
         this.setRunnerStep(`Versuch ${attempt}/${retry.maxAttempts}`);
+
+        // Timer neu starten für diesen Versuch
+        this.startRunnerElapsedTimer();
         document.getElementById('manual-eval').style.display = 'none';
         document.getElementById('runner-output').textContent = 'Warte auf Antwort...';
         const previewBtn = document.getElementById('preview-html-btn');
@@ -1214,6 +1228,14 @@ export const runner = {
             }
             : { retryId: retry.retryId, retryAttempt: attempt };
 
+        // DEBUG: Log retry context
+        console.log('[Retry] Attempt', attempt, '/', retry.maxAttempts);
+        if (attempt > 1) {
+            console.log('[Retry] History:', JSON.parse(JSON.stringify(retry.history)));
+            console.log('[Retry] Context length:', meta.retryContext?.length || 0);
+            console.log('[Retry] Context:', meta.retryContext);
+        }
+
         let run;
         try {
             this.state.runnerInFlight = true;
@@ -1232,6 +1254,13 @@ export const runner = {
         } finally {
             this.state.runnerInFlight = false;
         }
+
+        // DEBUG: Log received output
+        console.log('[Retry] Received run for attempt', attempt);
+        console.log('[Retry] Output length:', run.output?.length || 0);
+        console.log('[Retry] Output preview:', run.output?.substring(0, 200));
+        console.log('[Retry] Output hash:', this.hashString(run.output || ''));
+
         this.state.currentRun = run;
         const lastPrompt = promptText;
         retry.history.push({
@@ -1245,6 +1274,9 @@ export const runner = {
         this.displaySingleResult(run);
         this.updateRetryHistoryPanel(attempt);
 
+        // Timer stoppen nach Versuch-Ende
+        this.stopRunnerElapsedTimer();
+
         // Status auf "Warte auf Bewertung" setzen (nicht mehr blinkend)
         this.setRunnerStatus('pending', `Versuch ${attempt}/${retry.maxAttempts} - Bewerte jetzt`);
     },
@@ -1254,10 +1286,19 @@ export const runner = {
         const retry = this.state.manualRetry;
         if (!retry) return;
 
+        // DEBUG: Log feedback processing
+        console.log('[Retry] handleManualRetryAfterEval called');
+        console.log('[Retry] passed:', passed);
+        console.log('[Retry] comment received:', JSON.stringify(comment));
+        console.log('[Retry] comment length:', (comment || '').length);
+
         const last = retry.history[retry.history.length - 1];
         if (last) {
             last.comment = comment || '';
             last.passed = passed;
+            console.log('[Retry] Updated history entry:', JSON.stringify(last));
+        } else {
+            console.warn('[Retry] No last history entry found!');
         }
         this.state.manualRetryHistory = retry.history;
         this.updateRetryHistoryPanel(retry.attempt);

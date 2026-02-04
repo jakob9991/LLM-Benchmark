@@ -238,3 +238,22 @@
     align-items: center;
     gap: 0.5rem;
 }
+/* ===== Test Filter Section ===== */
+.test-filter-section {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1rem 1.5rem;
+}
+
+.test-filter-section .panel-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.test-filter-section .panel-select {
+    width: 100%;
+}

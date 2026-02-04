@@ -93,6 +93,10 @@ export const tests = {
     populateFilters(categories, difficulties) {
         const catSelect = document.getElementById('filter-category');
         if (catSelect) {
+            // Behalte nur die erste Option ("Alle Kategorien")
+            const firstOption = catSelect.querySelector('option:first-child');
+            catSelect.innerHTML = firstOption ? firstOption.outerHTML : '<option value="">Alle Kategorien</option>';
+
             categories?.forEach(cat => {
                 const info = CONFIG.categories[cat] || { name: cat };
                 catSelect.innerHTML += `<option value="${cat}">${info.name}</option>`;
@@ -101,6 +105,10 @@ export const tests = {
 
         const diffSelect = document.getElementById('filter-difficulty');
         if (diffSelect) {
+            // Behalte nur die erste Option ("Alle Schwierigkeiten")
+            const firstOption = diffSelect.querySelector('option:first-child');
+            diffSelect.innerHTML = firstOption ? firstOption.outerHTML : '<option value="">Alle Schwierigkeiten</option>';
+
             difficulties?.forEach(diff => {
                 const info = CONFIG.difficulties[diff] || { name: diff };
                 diffSelect.innerHTML += `<option value="${diff}">${info.name}</option>`;
