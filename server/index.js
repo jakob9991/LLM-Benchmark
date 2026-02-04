@@ -46,13 +46,14 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`
 ╔═══════════════════════════════════════════════╗
 ║     LLM Benchmark Tester - Server Started     ║
 ╠═══════════════════════════════════════════════╣
 ║  URL: http://localhost:${PORT}                   ║
 ║  API: http://localhost:${PORT}/api               ║
+║  Tailscale: http://100.125.60.111:${PORT}        ║
 ╚═══════════════════════════════════════════════╝
     `);
 

@@ -3,8 +3,8 @@
  */
 
 const CONFIG = {
-    // Backend API URL
-    apiUrl: 'http://localhost:3000/api',
+    // Backend API URL (relative, funktioniert lokal und via Tailscale)
+    apiUrl: '/api',
 
     // Kategorien für Tests
     categories: {
@@ -45,24 +45,24 @@ const CONFIG = {
 
         // Standardisierter Debug-Prompt Template
         promptTemplate: `You are a debugging assistant. Analyze the following single-file HTML app against the requirements.
-Return ONLY a numbered list of issues. No praise, no explanations.
+                    Return ONLY a numbered list of issues. No praise, no explanations.
 
-Requirements:
-- Single HTML file with embedded CSS/JS
-- Task CRUD + counts (total/done)
-- Pomodoro 25/5 with start/pause/reset + auto-switch
-- Persist tasks + timer state in localStorage
-- Shortcuts: Enter adds task, Space toggles timer, Delete removes selected task
-- Accessibility: labels, aria-labels, visible focus states
-- No external libraries
+                    Requirements:
+                    - Single HTML file with embedded CSS/JS
+                    - Task CRUD + counts (total/done)
+                    - Pomodoro 25/5 with start/pause/reset + auto-switch
+                    - Persist tasks + timer state in localStorage
+                    - Shortcuts: Enter adds task, Space toggles timer, Delete removes selected task
+                    - Accessibility: labels, aria-labels, visible focus states
+                    - No external libraries
 
-Code:
-\`\`\`html
-{{CODE}}
-\`\`\`
+                    Code:
+                    \`\`\`html
+                    {{CODE}}
+                    \`\`\`
 
-List all issues found:`
-    },
+                    List all issues found:`
+                },
 
     // Refresh Intervalle
     refreshInterval: 30000 // 30 Sekunden

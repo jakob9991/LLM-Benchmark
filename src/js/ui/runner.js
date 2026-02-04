@@ -105,10 +105,11 @@ export const runner = {
             }
         }
 
-        // Setze Runner in Idle-Zustand wenn kein Batch läuft
-        if (!this.state.benchmarkRunning) {
-            this.setRunnerIdle();
-        }
+        // NICHT mehr automatisch in Idle setzen - Ergebnis soll sichtbar bleiben
+        // Reset passiert erst beim Start des nächsten Tests (beginRunnerOperation)
+        // if (!this.state.benchmarkRunning) {
+        //     this.setRunnerIdle();
+        // }
     },
 
     setRunnerIdle() {
@@ -742,9 +743,9 @@ export const runner = {
         this.updateActionButtons();
         this.finishRunnerOperation();
 
-        // Checkboxen zurücksetzen
-        document.querySelectorAll('.test-item-checkbox:checked').forEach(cb => cb.checked = false);
-        this.updateSelectedTestsCount();
+        // Checkboxen NICHT mehr zurücksetzen - Auswahl soll bleiben
+        // document.querySelectorAll('.test-item-checkbox:checked').forEach(cb => cb.checked = false);
+        // this.updateSelectedTestsCount();
     },
 
 
